@@ -328,7 +328,7 @@ public class FluxifyShould
            }
            """;
         var services = new ServiceCollection();
-        services.AddSteps<IFluxfy>();
+        services.AddSteps<IFluxify>();
         await using var serviceProvider = services.BuildServiceProvider();
 
         var plan = JsonStepExecutionPlanLoader.Load(json, serviceProvider);

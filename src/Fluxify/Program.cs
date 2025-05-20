@@ -495,4 +495,4 @@ public class PreSeasonStep : ActionStepBase<string>
     }
 }
 
-public interface IFluxfy { }
+public interface IFluxify { }
