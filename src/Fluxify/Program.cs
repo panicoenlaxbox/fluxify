@@ -4,59 +4,49 @@ using Microsoft.Extensions.Logging.Abstractions;
 using System.Text.Json;
 using System.Text.Json.Serialization;
 
-var json = """
-           {
-               "ServiceKey": "RootRouterStep",
-               "Children": [
-                   {
-                       "ServiceKey": "FallbackStep",
-                       "RouteKey": "fallback"
-                   },
-                   {
-                       "ServiceKey": "SupportStep",
-                       "RouteKey": "support",
-                       "Children": [
-                           {
-                               "ServiceKey": "FirstLevelSupportStep"
-                           }
-                       ]
-                   },        
-                   {
-                       "ServiceKey": "BusinessRouterStep",
-                       "RouteKey": "business",
-                       "Children": [
-                           {
-                               "ServiceKey": "InSeasonStep",
-                               "RouteKey": "in-season"
-                           },
-                           {
-                               "ServiceKey": "PreSeasonStep",
-                               "RouteKey": "pre-season"
-                           }
-                       ]
-                   }
-               ]
-           }
-           """;
-
-//var json = """
-//    {
-//      "ServiceKey": "SupportStep",
-//      "Children": [
-//        { "ServiceKey": "FirstLevelSupportStep" }
-//      ]
-//    }
-//    """;
+const string json = """
+                    {
+                        "ServiceKey": "RootRouterStep",
+                        "Children": [
+                            {
+                                "ServiceKey": "FallbackStep",
+                                "RouteKey": "fallback"
+                            },
+                            {
+                                "ServiceKey": "SupportStep",
+                                "RouteKey": "support",
+                                "Children": [
+                                    {
+                                        "ServiceKey": "FirstLevelSupportStep"
+                                    }
+                                ]
+                            },        
+                            {
+                                "ServiceKey": "BusinessRouterStep",
+                                "RouteKey": "business",
+                                "Children": [
+                                    {
+                                        "ServiceKey": "InSeasonStep",
+                                        "RouteKey": "in-season"
+                                    },
+                                    {
+                                        "ServiceKey": "PreSeasonStep",
+                                        "RouteKey": "pre-season"
+                                    }
+                                ]
+                            }
+                        ]
+                    }
+                    """;
 
 var services = new ServiceCollection();
 services.AddLogging(cfg => cfg.AddConsole().SetMinimumLevel(LogLevel.Debug));
 services.AddSteps<Program>();
 
 await using var serviceProvider = services.BuildServiceProvider();
-LoggerBase.SetLoggerFactory(serviceProvider.GetRequiredService<ILoggerFactory>());
+LoggerBase.LoggerFactory = serviceProvider.GetRequiredService<ILoggerFactory>();
 
 var plan = JsonStepExecutionPlanLoader.Load(json, serviceProvider);
-Console.WriteLine(plan.AsJson());
 
 var input = Console.ReadLine();
 if (string.IsNullOrWhiteSpace(input))
@@ -69,7 +59,7 @@ var context = new StepExecutionPlanContext(input);
 var runner = new StepExecutionPlanRunner();
 await runner.ExecuteAsync(context, plan);
 
-Console.WriteLine(context.Output);
+Console.WriteLine(context.GetOutput<string>());
 
 public class StepExecutionPlan
 {
@@ -100,7 +90,8 @@ public class StepExecutionPlan
                 Children = [.. children.Select(kvp => BuildDefinition(kvp.Value, kvp.Key))]
             };
         }
-        else if (NextMap.TryGetValue(step, out var nextStep))
+
+        if (NextMap.TryGetValue(step, out var nextStep))
         {
             return new StepDefinition
             {
@@ -200,37 +191,42 @@ public static class JsonStepExecutionPlanLoader
     {
         var step = serviceProvider.GetRequiredKeyedService<IStep>(definition.ServiceKey);
 
-        if (step is RouterStepBase routerStep)
+        switch (step)
         {
-            if (definition.Children is null)
-            {
-                throw new InvalidOperationException($"Router step {definition.ServiceKey} is missing children");
-            }
-
-            var children = new Dictionary<string, IStep>();
-            foreach (var child in definition.Children)
-            {
-                if (string.IsNullOrWhiteSpace(child.RouteKey))
+            case RouterStepBase routerStep:
                 {
-                    throw new InvalidOperationException(
-                        $"Child {child.ServiceKey} missing RouteKey for parent {definition.ServiceKey}");
+                    if (definition.Children is null)
+                    {
+                        throw new InvalidOperationException($"Router step {definition.ServiceKey} is missing children");
+                    }
+
+                    var children = new Dictionary<string, IStep>();
+                    foreach (var child in definition.Children)
+                    {
+                        if (string.IsNullOrWhiteSpace(child.RouteKey))
+                        {
+                            throw new InvalidOperationException(
+                                $"Child {child.ServiceKey} missing RouteKey for parent {definition.ServiceKey}");
+                        }
+
+                        var builtChild = Build(child, plan, serviceProvider);
+                        children[child.RouteKey] = builtChild;
+                    }
+
+                    plan.ChildrenMap[routerStep] = children;
+                    break;
                 }
+            case IActionStep when definition.Children?.Any() == true:
+                {
+                    if (definition.Children.Count() != 1)
+                    {
+                        throw new InvalidOperationException($"Step {definition.ServiceKey} must have exactly one child.");
+                    }
 
-                var builtChild = Build(child, plan, serviceProvider);
-                children[child.RouteKey] = builtChild;
-            }
-
-            plan.ChildrenMap[routerStep] = children;
-        }
-        else if (step is IActionStep && definition.Children?.Any() == true)
-        {
-            if (definition.Children.Count() != 1)
-            {
-                throw new InvalidOperationException($"Step {definition.ServiceKey} must have exactly one child.");
-            }
-
-            var nextStep = Build(definition.Children.First(), plan, serviceProvider);
-            plan.NextMap[step] = nextStep;
+                    var nextStep = Build(definition.Children.First(), plan, serviceProvider);
+                    plan.NextMap[step] = nextStep;
+                    break;
+                }
         }
 
         return step;
@@ -275,7 +271,7 @@ public class StepExecutionPlanContext
     public object? Input { get; }
 
     /// <summary>
-    /// Output set by the last executed step of type <see cref="ActionStepBase{T}"/>.
+    /// Output set by the last executed step of type <see cref="ActionStepBase{T,R}"/>.
     /// </summary>
     public object? Output { get; set; }
 
@@ -312,32 +308,21 @@ public class StepExecutionPlanContext
         return To<T>(Output);
     }
 
-    private static T? To<T>(object? obj)
-    {
-        if (obj is null)
+    private static T? To<T>(object? obj) =>
+        obj switch
         {
-            return default;
-        }
-
-        if (obj is T value)
-        {
-            return value;
-        }
-
-        throw new InvalidCastException($"Expected value of type '{typeof(T).Name}', but was '{obj.GetType().Name}'.");
-    }
+            null => default,
+            T value => value,
+            _ => throw new InvalidCastException(
+                $"Expected value of type '{typeof(T).Name}', but was '{obj.GetType().Name}'.")
+        };
 }
 
 public abstract class LoggerBase
 {
     private ILogger? _logger;
 
-    private static ILoggerFactory LoggerFactory { get; set; } = NullLoggerFactory.Instance;
-
-    public static void SetLoggerFactory(ILoggerFactory loggerFactory)
-    {
-        LoggerFactory = loggerFactory;
-    }
+    public static ILoggerFactory LoggerFactory { get; set; } = NullLoggerFactory.Instance;
 
     protected ILogger Logger => _logger ??= LoggerFactory.CreateLogger(GetType());
 }
@@ -355,16 +340,11 @@ public abstract class RouterStepBase : IRouterStep
     {
         var startedAt = DateTime.UtcNow;
 
-        string input = (string)(context.ExecutionRecords.LastOrDefault()?.Output ?? context.GetInput<string>()!);
+        var input = (string)(context.ExecutionRecords.LastOrDefault()?.Output ?? context.GetInput<string>()!);
 
-        var routeKey = await GetRouteKeyAsync(input, context);
-
-        if (routeKey is null)
-        {
-            throw new InvalidOperationException($"{GetType().Name} could not determine a valid route key.");
-        }
-
-        context.RouteKey = routeKey;
+        context.RouteKey = await GetRouteKeyAsync(input, context) ??
+                           throw new InvalidOperationException(
+                               $"{GetType().Name} could not determine a valid route key.");
 
         context.AddExecutionRecord(GetType().Name, startedAt, DateTime.UtcNow, input, routeKey: context.RouteKey);
     }
@@ -374,13 +354,14 @@ public abstract class RouterStepBase : IRouterStep
 
 public interface IActionStep : IStep;
 
-public abstract class ActionStepBase<T> : IActionStep
+public abstract class ActionStepBase<TInput, TOutput> : IActionStep
 {
     public async Task ExecuteAsync(StepExecutionPlanContext context)
     {
         var startedAt = DateTime.UtcNow;
 
-        object? input = context.Input;
+        var input = context.Input;
+
         foreach (var record in context.ExecutionRecords.Reverse())
         {
             if (record.Output is not null)
@@ -396,12 +377,17 @@ public abstract class ActionStepBase<T> : IActionStep
             }
         }
 
-        context.Output = await ExecuteCoreAsync(input, context);
+        if (input is not null && input is not TInput)
+        {
+            throw new InvalidOperationException($"Input is not of type {typeof(TInput).Name}.");
+        }
+
+        context.Output = await ExecuteCoreAsync((TInput)input!, context);
 
         context.AddExecutionRecord(GetType().Name, startedAt, DateTime.UtcNow, input, output: context.Output);
     }
 
-    protected abstract Task<T> ExecuteCoreAsync(object? input, StepExecutionPlanContext context);
+    protected abstract Task<TOutput?> ExecuteCoreAsync(TInput? input, StepExecutionPlanContext context);
 }
 
 public class RootRouterStep : RouterStepBase
@@ -410,11 +396,11 @@ public class RootRouterStep : RouterStepBase
     {
         string? routeKey = null;
 
-        if (input.Contains("hola", StringComparison.OrdinalIgnoreCase))
+        if (input.Contains("hi", StringComparison.OrdinalIgnoreCase))
         {
             routeKey = "fallback";
         }
-        else if (input.Contains("soporte", StringComparison.OrdinalIgnoreCase))
+        else if (input.Contains("support", StringComparison.OrdinalIgnoreCase))
         {
             routeKey = "support";
         }
@@ -428,11 +414,11 @@ public class RootRouterStep : RouterStepBase
     }
 }
 
-public class FallbackStep : ActionStepBase<string>
+public class FallbackStep : ActionStepBase<string, string>
 {
-    protected override Task<string> ExecuteCoreAsync(object? input, StepExecutionPlanContext context)
+    protected override Task<string?> ExecuteCoreAsync(string? input, StepExecutionPlanContext context)
     {
-        return Task.FromResult("¿Qué tal?");
+        return Task.FromResult<string?>("How are you?");
     }
 }
 
@@ -440,23 +426,23 @@ public class SupportRouterStep : RouterStepBase
 {
     protected override Task<string?> GetRouteKeyAsync(string input, StepExecutionPlanContext context)
     {
-        return Task.FromResult<string?>("nivel-1");
+        return Task.FromResult<string?>("level-1");
     }
 }
 
-public class SupportStep : ActionStepBase<string>
+public class SupportStep : ActionStepBase<string, string>
 {
-    protected override Task<string> ExecuteCoreAsync(object? input, StepExecutionPlanContext context)
+    protected override Task<string?> ExecuteCoreAsync(string? input, StepExecutionPlanContext context)
     {
-        return Task.FromResult("Hola, ¿en qué puedo ayudarte con soporte?");
+        return Task.FromResult<string?>("Hi, how can I help you with support?");
     }
 }
 
-public class FirstLevelSupportStep : ActionStepBase<string>
+public class FirstLevelSupportStep : ActionStepBase<string, string>
 {
-    protected override Task<string> ExecuteCoreAsync(object? input, StepExecutionPlanContext context)
+    protected override Task<string?> ExecuteCoreAsync(string? input, StepExecutionPlanContext context)
     {
-        return Task.FromResult("Hola, ¿en qué puedo ayudarte con el soporte de primer nivel?");
+        return Task.FromResult<string?>("Hi, how can I help you with level-1 support?");
     }
 }
 
@@ -479,20 +465,20 @@ public class BusinessRouterStep : RouterStepBase
     }
 }
 
-public class InSeasonStep : ActionStepBase<string>
+public class InSeasonStep : ActionStepBase<string, string>
 {
-    protected override Task<string> ExecuteCoreAsync(object? input, StepExecutionPlanContext context)
+    protected override Task<string?> ExecuteCoreAsync(string? input, StepExecutionPlanContext context)
     {
-        return Task.FromResult("Hola, ¿en qué puedo ayudarte con in-season?");
+        return Task.FromResult<string?>("Hi, how can I help you with in-season?");
     }
 }
 
-public class PreSeasonStep : ActionStepBase<string>
+public class PreSeasonStep : ActionStepBase<string, string>
 {
-    protected override Task<string> ExecuteCoreAsync(object? input, StepExecutionPlanContext context)
+    protected override Task<string?> ExecuteCoreAsync(string? input, StepExecutionPlanContext context)
     {
-        return Task.FromResult("Hola, ¿en qué puedo ayudarte con pre-season?");
+        return Task.FromResult<string?>("Hi, how can I help you with pre-season?");
     }
 }
 
-public interface IFluxify { }
+public interface IFluxify;

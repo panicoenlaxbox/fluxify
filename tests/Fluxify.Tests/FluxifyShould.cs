@@ -16,22 +16,22 @@ public class FluxifyShould
         {
             { "fallback", new FallbackStep() }
         };
-        var context = new StepExecutionPlanContext("Hola");
+        var context = new StepExecutionPlanContext("hi");
         var runner = new StepExecutionPlanRunner();
 
         await runner.ExecuteAsync(context, plan);
 
-        context.Output.ShouldBe("¿Qué tal?");
+        context.Output.ShouldBe("How are you?");
         var expected = new[]
         {
             new
             {
-                StepName = "RootRouterStep", Input = (string?)"Hola", Output = (string?)null,
+                StepName = "RootRouterStep", Input = (string?)"hi", Output = (string?)null,
                 RouteKey = (string?)"fallback"
             },
             new
             {
-                StepName = "FallbackStep", Input = (string?)"Hola", Output = (string?)"¿Qué tal?",
+                StepName = "FallbackStep", Input = (string?)"hi", Output = (string?)"How are you?",
                 RouteKey = (string?)null
             }
         };
@@ -62,7 +62,7 @@ public class FluxifyShould
 
         await runner.ExecuteAsync(context, plan);
 
-        context.Output.ShouldBe("Hola, ¿en qué puedo ayudarte con in-season?");
+        context.Output.ShouldBe("Hi, how can I help you with in-season?");
         var expected = new[]
         {
             new
@@ -78,7 +78,7 @@ public class FluxifyShould
             new
             {
                 StepName = "InSeasonStep", Input = (string?)"in-season",
-                Output = (string?)"Hola, ¿en qué puedo ayudarte con in-season?", RouteKey = (string?)null
+                Output = (string?)"Hi, how can I help you with in-season?", RouteKey = (string?)null
             }
         };
         var actual = context.ExecutionRecords.Select(st => new
@@ -100,28 +100,28 @@ public class FluxifyShould
             { "support", supportStep }
         };
         plan.NextMap[supportStep] = firstLevelStep;
-        var context = new StepExecutionPlanContext("soporte");
+        var context = new StepExecutionPlanContext("support");
         var runner = new StepExecutionPlanRunner();
 
         await runner.ExecuteAsync(context, plan);
 
-        context.Output.ShouldBe("Hola, ¿en qué puedo ayudarte con el soporte de primer nivel?");
+        context.Output.ShouldBe("Hi, how can I help you with level-1 support?");
         var expected = new[]
         {
             new
             {
-                StepName = "RootRouterStep", Input = (string?)"soporte", Output = (string?)null,
+                StepName = "RootRouterStep", Input = (string?)"support", Output = (string?)null,
                 RouteKey = (string?)"support"
             },
             new
             {
-                StepName = "SupportStep", Input = (string?)"soporte",
-                Output = (string?)"Hola, ¿en qué puedo ayudarte con soporte?", RouteKey = (string?)null
+                StepName = "SupportStep", Input = (string?)"support",
+                Output = (string?)"Hi, how can I help you with support?", RouteKey = (string?)null
             },
             new
             {
-                StepName = "FirstLevelSupportStep", Input = (string?)"Hola, ¿en qué puedo ayudarte con soporte?",
-                Output = (string?)"Hola, ¿en qué puedo ayudarte con el soporte de primer nivel?",
+                StepName = "FirstLevelSupportStep", Input = (string?)"Hi, how can I help you with support?",
+                Output = (string?)"Hi, how can I help you with level-1 support?",
                 RouteKey = (string?)null
             }
         };
@@ -137,18 +137,18 @@ public class FluxifyShould
         {
             Root = new FirstLevelSupportStep()
         };
-        var context = new StepExecutionPlanContext("Hola");
+        var context = new StepExecutionPlanContext("hi");
         var runner = new StepExecutionPlanRunner();
 
         await runner.ExecuteAsync(context, plan);
 
-        context.Output.ShouldBe("Hola, ¿en qué puedo ayudarte con el soporte de primer nivel?");
+        context.Output.ShouldBe("Hi, how can I help you with level-1 support?");
         var expected = new[]
         {
             new
             {
-                StepName = "FirstLevelSupportStep", Input = (string?)"Hola",
-                Output = (string?)"Hola, ¿en qué puedo ayudarte con el soporte de primer nivel?",
+                StepName = "FirstLevelSupportStep", Input = (string?)"hi",
+                Output = (string?)"Hi, how can I help you with level-1 support?",
                 RouteKey = (string?)null
             }
         };
@@ -167,23 +167,23 @@ public class FluxifyShould
         };
         var firstLevelStep = new FirstLevelSupportStep();
         plan.NextMap[supportStep] = firstLevelStep;
-        var context = new StepExecutionPlanContext("Hola");
+        var context = new StepExecutionPlanContext("hi");
         var runner = new StepExecutionPlanRunner();
 
         await runner.ExecuteAsync(context, plan);
 
-        context.Output.ShouldBe("Hola, ¿en qué puedo ayudarte con el soporte de primer nivel?");
+        context.Output.ShouldBe("Hi, how can I help you with level-1 support?");
         var expected = new[]
         {
             new
             {
-                StepName = "SupportStep", Input = (string?)"Hola",
-                Output = (string?)"Hola, ¿en qué puedo ayudarte con soporte?", RouteKey = (string?)null
+                StepName = "SupportStep", Input = (string?)"hi",
+                Output = (string?)"Hi, how can I help you with support?", RouteKey = (string?)null
             },
             new
             {
-                StepName = "FirstLevelSupportStep", Input = (string?)"Hola, ¿en qué puedo ayudarte con soporte?",
-                Output = (string?)"Hola, ¿en qué puedo ayudarte con el soporte de primer nivel?",
+                StepName = "FirstLevelSupportStep", Input = (string?)"Hi, how can I help you with support?",
+                Output = (string?)"Hi, how can I help you with level-1 support?",
                 RouteKey = (string?)null
             }
         };
@@ -205,35 +205,35 @@ public class FluxifyShould
         var firstLevelStep = new FirstLevelSupportStep();
         plan.ChildrenMap[(RouterStepBase)plan.Root] = new Dictionary<string, IStep> { { "support", supportStep } };
         plan.NextMap[supportStep] = supportRouter;
-        plan.ChildrenMap[supportRouter] = new Dictionary<string, IStep> { { "nivel-1", firstLevelStep } };
+        plan.ChildrenMap[supportRouter] = new Dictionary<string, IStep> { { "level-1", firstLevelStep } };
 
-        var context = new StepExecutionPlanContext("soporte de nivel 1");
+        var context = new StepExecutionPlanContext("level-1 support");
         var runner = new StepExecutionPlanRunner();
 
         await runner.ExecuteAsync(context, plan);
 
-        context.Output.ShouldBe("Hola, ¿en qué puedo ayudarte con el soporte de primer nivel?");
+        context.Output.ShouldBe("Hi, how can I help you with level-1 support?");
         var expected = new[]
         {
             new
             {
-                StepName = "RootRouterStep", Input = (string?)"soporte de nivel 1", Output = (string?)null,
+                StepName = "RootRouterStep", Input = (string?)"level-1 support", Output = (string?)null,
                 RouteKey = (string?)"support"
             },
             new
             {
-                StepName = "SupportStep", Input = (string?)"soporte de nivel 1",
-                Output = (string?)"Hola, ¿en qué puedo ayudarte con soporte?", RouteKey = (string?)null
+                StepName = "SupportStep", Input = (string?)"level-1 support",
+                Output = (string?)"Hi, how can I help you with support?", RouteKey = (string?)null
             },
             new
             {
-                StepName = "SupportRouterStep", Input = (string?)"Hola, ¿en qué puedo ayudarte con soporte?",
-                Output = (string?)null, RouteKey = (string?)"nivel-1"
+                StepName = "SupportRouterStep", Input = (string?)"Hi, how can I help you with support?",
+                Output = (string?)null, RouteKey = (string?)"level-1"
             },
             new
             {
-                StepName = "FirstLevelSupportStep", Input = (string?)"Hola, ¿en qué puedo ayudarte con soporte?",
-                Output = (string?)"Hola, ¿en qué puedo ayudarte con el soporte de primer nivel?",
+                StepName = "FirstLevelSupportStep", Input = (string?)"Hi, how can I help you with support?",
+                Output = (string?)"Hi, how can I help you with level-1 support?",
                 RouteKey = (string?)null
             }
         };
@@ -257,31 +257,31 @@ public class FluxifyShould
             },
             ChildrenMap =
             {
-                [supportRouter] = new Dictionary<string, IStep> { { "nivel-1", firstLevelSupportStep } }
+                [supportRouter] = new Dictionary<string, IStep> { { "level-1", firstLevelSupportStep } }
             }
         };
-        var context = new StepExecutionPlanContext("necesito soporte de nivel 1");
+        var context = new StepExecutionPlanContext("I need level-1 support");
         var runner = new StepExecutionPlanRunner();
 
         await runner.ExecuteAsync(context, plan);
 
-        context.Output.ShouldBe("Hola, ¿en qué puedo ayudarte con el soporte de primer nivel?");
+        context.Output.ShouldBe("Hi, how can I help you with level-1 support?");
         var expected = new[]
         {
             new
             {
-                StepName = "SupportStep", Input = (string?)"necesito soporte de nivel 1",
-                Output = (string?)"Hola, ¿en qué puedo ayudarte con soporte?", RouteKey = (string?)null
+                StepName = "SupportStep", Input = (string?)"I need level-1 support",
+                Output = (string?)"Hi, how can I help you with support?", RouteKey = (string?)null
             },
             new
             {
-                StepName = "SupportRouterStep", Input = (string?)"Hola, ¿en qué puedo ayudarte con soporte?",
-                Output = (string?)null, RouteKey = (string?)"nivel-1"
+                StepName = "SupportRouterStep", Input = (string?)"Hi, how can I help you with support?",
+                Output = (string?)null, RouteKey = (string?)"level-1"
             },
             new
             {
-                StepName = "FirstLevelSupportStep", Input = (string?)"Hola, ¿en qué puedo ayudarte con soporte?",
-                Output = (string?)"Hola, ¿en qué puedo ayudarte con el soporte de primer nivel?",
+                StepName = "FirstLevelSupportStep", Input = (string?)"Hi, how can I help you with support?",
+                Output = (string?)"Hi, how can I help you with level-1 support?",
                 RouteKey = (string?)null
             }
         };
