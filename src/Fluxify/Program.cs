@@ -123,7 +123,7 @@ public class StepExecutionPlanRunner : LoggerBase
 
                 await currentStep.ExecuteAsync(context);
 
-                var routeKey = context.RouteKey ?? throw new InvalidOperationException("Route key was not determined.");
+                string routeKey = context.RouteKey!;
 
                 Logger.LogDebug("Router step {StepName} determined route key {RouteKey}", currentStep.GetType().Name,
                     routeKey);
