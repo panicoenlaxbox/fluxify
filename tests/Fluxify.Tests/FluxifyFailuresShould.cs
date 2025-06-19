@@ -1,4 +1,6 @@
 ﻿using Shouldly;
+using Microsoft.Extensions.DependencyInjection;
+using System.Text.Json;
 
 namespace Fluxify.Tests;
 
@@ -85,6 +87,71 @@ public class FluxifyFailuresShould
         var ex = await Should.ThrowAsync<InvalidOperationException>(() => runner.ExecuteAsync(context, plan));
 
         ex.Message.ShouldBe("Input is not of type String.");
+    }
+
+    [Fact]
+    public async Task fail_when_loading_from_json_and_action_step_has_children()
+    {
+        const string json = """
+            {
+                "ServiceKey": "FallbackStep",
+                "Children": [
+                    {
+                        "ServiceKey": "SupportStep",
+                        "RouteKey": "support"
+                    }
+                ]
+            }
+            """;
+
+        var services = new ServiceCollection();
+        services.AddSteps<IFluxify>();
+        await using var serviceProvider = services.BuildServiceProvider();
+
+        var ex = Should.Throw<InvalidOperationException>(() => JsonStepExecutionPlanLoader.Load(json, serviceProvider));
+
+        ex.Message.ShouldBe("Action step FallbackStep cannot have children");
+    }
+    
+    [Fact]
+    public async Task fail_when_loading_from_json_and_router_step_is_missing_children()
+    {
+        const string json = """
+            {
+                "ServiceKey": "RootRouterStep"
+            }
+            """;
+
+        var services = new ServiceCollection();
+        services.AddSteps<IFluxify>();
+        await using var serviceProvider = services.BuildServiceProvider();
+
+        var ex = Should.Throw<InvalidOperationException>(() => JsonStepExecutionPlanLoader.Load(json, serviceProvider));
+
+        ex.Message.ShouldBe("Router step RootRouterStep is missing children");
+    }
+    
+    [Fact]
+    public async Task fail_when_loading_from_json_and_child_is_missing_route_key()
+    {
+        const string json = """
+            {
+                "ServiceKey": "RootRouterStep",
+                "Children": [
+                    {
+                        "ServiceKey": "FallbackStep"
+                    }
+                ]
+            }
+            """;
+
+        var services = new ServiceCollection();
+        services.AddSteps<IFluxify>();
+        await using var serviceProvider = services.BuildServiceProvider();
+
+        var ex = Should.Throw<InvalidOperationException>(() => JsonStepExecutionPlanLoader.Load(json, serviceProvider));
+
+        ex.Message.ShouldBe("Child FallbackStep missing RouteKey for parent RootRouterStep");
     }
 
     private class RouterStepWithoutRouteKey : RouterStepBase

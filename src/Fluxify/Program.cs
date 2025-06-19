@@ -14,12 +14,7 @@ const string json = """
                             },
                             {
                                 "ServiceKey": "SupportStep",
-                                "RouteKey": "support",
-                                "Children": [
-                                    {
-                                        "ServiceKey": "FirstLevelSupportStep"
-                                    }
-                                ]
+                                "RouteKey": "support"
                             },        
                             {
                                 "ServiceKey": "BusinessRouterStep",
@@ -65,7 +60,6 @@ public class StepExecutionPlan
 {
     public IStep Root { get; set; } = null!;
     public Dictionary<RouterStepBase, Dictionary<string, IStep>> ChildrenMap { get; } = [];
-    public Dictionary<IStep, IStep> NextMap { get; } = [];
 
     public string AsJson()
     {
@@ -88,16 +82,6 @@ public class StepExecutionPlan
                 ServiceKey = step.GetType().Name,
                 RouteKey = routeKey,
                 Children = [.. children.Select(kvp => BuildDefinition(kvp.Value, kvp.Key))]
-            };
-        }
-
-        if (NextMap.TryGetValue(step, out var nextStep))
-        {
-            return new StepDefinition
-            {
-                ServiceKey = step.GetType().Name,
-                RouteKey = routeKey,
-                Children = [BuildDefinition(nextStep, null)]
             };
         }
 
@@ -144,12 +128,11 @@ public class StepExecutionPlanRunner : LoggerBase
             }
             else
             {
-                plan.NextMap.TryGetValue(currentStep, out var nextStep);
-
                 Logger.LogDebug("Executing action step {StepName}", currentStep.GetType().Name);
 
                 await currentStep.ExecuteAsync(context);
-                currentStep = nextStep;
+
+                currentStep = null;
             }
         }
     }
@@ -191,42 +174,31 @@ public static class JsonStepExecutionPlanLoader
     {
         var step = serviceProvider.GetRequiredKeyedService<IStep>(definition.ServiceKey);
 
-        switch (step)
+        if (step is RouterStepBase routerStep)
         {
-            case RouterStepBase routerStep:
+            if (definition.Children is null)
+            {
+                throw new InvalidOperationException($"Router step {definition.ServiceKey} is missing children");
+            }
+
+            var children = new Dictionary<string, IStep>();
+            foreach (var child in definition.Children)
+            {
+                if (string.IsNullOrWhiteSpace(child.RouteKey))
                 {
-                    if (definition.Children is null)
-                    {
-                        throw new InvalidOperationException($"Router step {definition.ServiceKey} is missing children");
-                    }
-
-                    var children = new Dictionary<string, IStep>();
-                    foreach (var child in definition.Children)
-                    {
-                        if (string.IsNullOrWhiteSpace(child.RouteKey))
-                        {
-                            throw new InvalidOperationException(
-                                $"Child {child.ServiceKey} missing RouteKey for parent {definition.ServiceKey}");
-                        }
-
-                        var builtChild = Build(child, plan, serviceProvider);
-                        children[child.RouteKey] = builtChild;
-                    }
-
-                    plan.ChildrenMap[routerStep] = children;
-                    break;
+                    throw new InvalidOperationException(
+                        $"Child {child.ServiceKey} missing RouteKey for parent {definition.ServiceKey}");
                 }
-            case IActionStep when definition.Children?.Any() == true:
-                {
-                    if (definition.Children.Count() != 1)
-                    {
-                        throw new InvalidOperationException($"Step {definition.ServiceKey} must have exactly one child.");
-                    }
 
-                    var nextStep = Build(definition.Children.First(), plan, serviceProvider);
-                    plan.NextMap[step] = nextStep;
-                    break;
-                }
+                var builtChild = Build(child, plan, serviceProvider);
+                children[child.RouteKey] = builtChild;
+            }
+
+            plan.ChildrenMap[routerStep] = children;
+        }
+        else if (definition.Children?.Any() == true)
+        {
+            throw new InvalidOperationException($"Action step {definition.ServiceKey} cannot have children");
         }
 
         return step;
