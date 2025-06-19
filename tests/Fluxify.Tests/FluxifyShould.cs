@@ -26,17 +26,27 @@ public class FluxifyShould
         {
             new
             {
-                StepName = "RootRouterStep", Input = (string?)"hi", Output = (string?)null,
+                StepName = "RootRouterStep",
+                Input = (string?)"hi",
+                Output = (string?)null,
                 RouteKey = (string?)"fallback"
             },
             new
             {
-                StepName = "FallbackStep", Input = (string?)"hi", Output = (string?)"How are you?",
+                StepName = "FallbackStep",
+                Input = (string?)"hi",
+                Output = (string?)"How are you?",
                 RouteKey = (string?)null
             }
         };
-        var actual = context.ExecutionRecords.Select(st => new
-        { st.StepName, Input = (string?)st.Input, Output = (string?)st.Output, st.RouteKey });
+        var actual = context.ExecutionRecords.Select(st =>
+            new
+            {
+                st.StepName,
+                Input = (string?)st.Input,
+                Output = (string?)st.Output,
+                st.RouteKey
+            });
         actual.ShouldBe(expected);
     }
 
@@ -67,22 +77,34 @@ public class FluxifyShould
         {
             new
             {
-                StepName = "RootRouterStep", Input = (string?)"in-season", Output = (string?)null,
+                StepName = "RootRouterStep", 
+                Input = (string?)"in-season", 
+                Output = (string?)null,
                 RouteKey = (string?)"business"
             },
             new
             {
-                StepName = "BusinessRouterStep", Input = (string?)"in-season", Output = (string?)null,
+                StepName = "BusinessRouterStep", 
+                Input = (string?)"in-season", 
+                Output = (string?)null,
                 RouteKey = (string?)"in-season"
             },
             new
             {
-                StepName = "InSeasonStep", Input = (string?)"in-season",
-                Output = (string?)"Hi, how can I help you with in-season?", RouteKey = (string?)null
+                StepName = "InSeasonStep", 
+                Input = (string?)"in-season",
+                Output = (string?)"Hi, how can I help you with in-season?", 
+                RouteKey = (string?)null
             }
         };
-        var actual = context.ExecutionRecords.Select(st => new
-        { st.StepName, Input = (string?)st.Input, Output = (string?)st.Output, st.RouteKey });
+        var actual = context.ExecutionRecords.Select(st =>
+            new
+            {
+                st.StepName,
+                Input = (string?)st.Input,
+                Output = (string?)st.Output,
+                st.RouteKey
+            });
         actual.ShouldBe(expected);
     }
 
@@ -110,23 +132,34 @@ public class FluxifyShould
         {
             new
             {
-                StepName = "RootRouterStep", Input = (string?)"support", Output = (string?)null,
+                StepName = "RootRouterStep", 
+                Input = (string?)"support", 
+                Output = (string?)null,
                 RouteKey = (string?)"support"
             },
             new
             {
-                StepName = "SupportStep", Input = (string?)"support",
-                Output = (string?)"Hi, how can I help you with support?", RouteKey = (string?)null
+                StepName = "SupportStep", 
+                Input = (string?)"support",
+                Output = (string?)"Hi, how can I help you with support?", 
+                RouteKey = (string?)null
             },
             new
             {
-                StepName = "FirstLevelSupportStep", Input = (string?)"Hi, how can I help you with support?",
+                StepName = "FirstLevelSupportStep", 
+                Input = (string?)"Hi, how can I help you with support?",
                 Output = (string?)"Hi, how can I help you with level-1 support?",
                 RouteKey = (string?)null
             }
         };
-        var actual = context.ExecutionRecords.Select(st => new
-        { st.StepName, Input = (string?)st.Input, Output = (string?)st.Output, st.RouteKey });
+        var actual = context.ExecutionRecords.Select(st =>
+            new
+            {
+                st.StepName,
+                Input = (string?)st.Input,
+                Output = (string?)st.Output,
+                st.RouteKey
+            });
         actual.ShouldBe(expected);
     }
 
@@ -147,13 +180,20 @@ public class FluxifyShould
         {
             new
             {
-                StepName = "FirstLevelSupportStep", Input = (string?)"hi",
+                StepName = "FirstLevelSupportStep", 
+                Input = (string?)"hi",
                 Output = (string?)"Hi, how can I help you with level-1 support?",
                 RouteKey = (string?)null
             }
         };
-        var actual = context.ExecutionRecords.Select(st => new
-        { st.StepName, Input = (string?)st.Input, Output = (string?)st.Output, st.RouteKey });
+        var actual = context.ExecutionRecords.Select(st =>
+            new
+            {
+                st.StepName,
+                Input = (string?)st.Input,
+                Output = (string?)st.Output,
+                st.RouteKey
+            });
         actual.ShouldBe(expected);
     }
 
@@ -177,18 +217,27 @@ public class FluxifyShould
         {
             new
             {
-                StepName = "SupportStep", Input = (string?)"hi",
-                Output = (string?)"Hi, how can I help you with support?", RouteKey = (string?)null
+                StepName = "SupportStep", 
+                Input = (string?)"hi",
+                Output = (string?)"Hi, how can I help you with support?", 
+                RouteKey = (string?)null
             },
             new
             {
-                StepName = "FirstLevelSupportStep", Input = (string?)"Hi, how can I help you with support?",
+                StepName = "FirstLevelSupportStep", 
+                Input = (string?)"Hi, how can I help you with support?",
                 Output = (string?)"Hi, how can I help you with level-1 support?",
                 RouteKey = (string?)null
             }
         };
-        var actual = context.ExecutionRecords.Select(st => new
-        { st.StepName, Input = (string?)st.Input, Output = (string?)st.Output, st.RouteKey });
+        var actual = context.ExecutionRecords.Select(st =>
+            new
+            {
+                st.StepName,
+                Input = (string?)st.Input,
+                Output = (string?)st.Output,
+                st.RouteKey
+            });
         actual.ShouldBe(expected);
     }
 
@@ -217,28 +266,41 @@ public class FluxifyShould
         {
             new
             {
-                StepName = "RootRouterStep", Input = (string?)"level-1 support", Output = (string?)null,
+                StepName = "RootRouterStep", 
+                Input = (string?)"level-1 support", 
+                Output = (string?)null,
                 RouteKey = (string?)"support"
             },
             new
             {
-                StepName = "SupportStep", Input = (string?)"level-1 support",
-                Output = (string?)"Hi, how can I help you with support?", RouteKey = (string?)null
+                StepName = "SupportStep", 
+                Input = (string?)"level-1 support",
+                Output = (string?)"Hi, how can I help you with support?", 
+                RouteKey = (string?)null
             },
             new
             {
-                StepName = "SupportRouterStep", Input = (string?)"Hi, how can I help you with support?",
-                Output = (string?)null, RouteKey = (string?)"level-1"
+                StepName = "SupportRouterStep", 
+                Input = (string?)"Hi, how can I help you with support?",
+                Output = (string?)null, 
+                RouteKey = (string?)"level-1"
             },
             new
             {
-                StepName = "FirstLevelSupportStep", Input = (string?)"Hi, how can I help you with support?",
+                StepName = "FirstLevelSupportStep", 
+                Input = (string?)"Hi, how can I help you with support?",
                 Output = (string?)"Hi, how can I help you with level-1 support?",
                 RouteKey = (string?)null
             }
         };
-        var actual = context.ExecutionRecords.Select(st => new
-        { st.StepName, Input = (string?)st.Input, Output = (string?)st.Output, st.RouteKey });
+        var actual = context.ExecutionRecords.Select(st =>
+            new
+            {
+                st.StepName,
+                Input = (string?)st.Input,
+                Output = (string?)st.Output,
+                st.RouteKey
+            });
         actual.ShouldBe(expected);
     }
 
@@ -270,23 +332,34 @@ public class FluxifyShould
         {
             new
             {
-                StepName = "SupportStep", Input = (string?)"I need level-1 support",
-                Output = (string?)"Hi, how can I help you with support?", RouteKey = (string?)null
+                StepName = "SupportStep", 
+                Input = (string?)"I need level-1 support",
+                Output = (string?)"Hi, how can I help you with support?", 
+                RouteKey = (string?)null
             },
             new
             {
-                StepName = "SupportRouterStep", Input = (string?)"Hi, how can I help you with support?",
-                Output = (string?)null, RouteKey = (string?)"level-1"
+                StepName = "SupportRouterStep", 
+                Input = (string?)"Hi, how can I help you with support?",
+                Output = (string?)null, 
+                RouteKey = (string?)"level-1"
             },
             new
             {
-                StepName = "FirstLevelSupportStep", Input = (string?)"Hi, how can I help you with support?",
+                StepName = "FirstLevelSupportStep", 
+                Input = (string?)"Hi, how can I help you with support?",
                 Output = (string?)"Hi, how can I help you with level-1 support?",
                 RouteKey = (string?)null
             }
         };
-        var actual = context.ExecutionRecords.Select(st => new
-        { st.StepName, Input = (string?)st.Input, Output = (string?)st.Output, st.RouteKey });
+        var actual = context.ExecutionRecords.Select(st =>
+            new
+            {
+                st.StepName,
+                Input = (string?)st.Input,
+                Output = (string?)st.Output,
+                st.RouteKey
+            });
         actual.ShouldBe(expected);
     }
 
