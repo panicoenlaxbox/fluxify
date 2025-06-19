@@ -107,7 +107,7 @@ public class StepExecutionPlanRunner : LoggerBase
 
                 await currentStep.ExecuteAsync(context);
 
-                var routeKey = context.RouteKey!;
+                var routeKey = context.LastRouteKey!;
 
                 Logger.LogDebug("Router step {StepName} determined route key {RouteKey}", currentStep.GetType().Name,
                     routeKey);
@@ -216,18 +216,18 @@ public class StepExecutionRecord
     public string StepName { get; }
     public DateTime StartedAt { get; }
     public DateTime FinishedAt { get; }
-    public object? Input { get; }
+    public string Input { get; }
     public object? Output { get; }
     public string? RouteKey { get; }
     public Dictionary<string, object>? Metadata { get; }
 
-    public StepExecutionRecord(string stepName, DateTime startedAt, DateTime finishedAt, object? input, object? output,
+    public StepExecutionRecord(string stepName, DateTime startedAt, DateTime finishedAt, string input, object? output,
         string? routeKey, Dictionary<string, object>? metadata)
     {
         StepName = stepName ?? throw new ArgumentNullException(nameof(stepName));
         StartedAt = startedAt;
         FinishedAt = finishedAt;
-        Input = input ?? throw new ArgumentNullException(nameof(input));
+        Input = input;
         Output = output;
         RouteKey = routeKey;
         Metadata = metadata;
@@ -239,39 +239,37 @@ public class StepExecutionPlanContext
     /// <summary>
     /// Original input to the plan.
     /// </summary>
-    public object? Input { get; }
+    public string Input { get; }
 
     /// <summary>
-    /// Output set by the last executed step of type <see cref="ActionStepBase{T,R}"/>.
+    /// Output set by the executed action step of type <see cref="ActionStepBase{R}"/>.
     /// </summary>
     public object? Output { get; set; }
 
     /// <summary>
     /// RouteKey set by the last executed step of type <see cref="RouterStepBase"/>.
     /// </summary>
-    public string? RouteKey { get; set; }
+    public string? LastRouteKey { get; set; }
 
     public Dictionary<string, object>? Metadata { get; set; }
 
     private readonly IList<StepExecutionRecord> _executionRecords = [];
 
-    public IReadOnlyList<StepExecutionRecord> ExecutionRecords => _executionRecords.AsReadOnly();
-
-    public StepExecutionPlanContext(object? input)
+    public StepExecutionPlanContext(string input)
     {
+        if (string.IsNullOrWhiteSpace(input))
+        {
+            throw new ArgumentNullException(nameof(input));
+        }
         Input = input;
     }
 
-    public void AddExecutionRecord(string stepName, DateTime startedAt, DateTime finishedAt, object? input,
-        object? output = null, string? routeKey = null, Dictionary<string, object>? metadata = null)
-    {
-        _executionRecords.Add(new StepExecutionRecord(stepName, startedAt, finishedAt, input, output, routeKey,
-            metadata));
-    }
+    public IReadOnlyList<StepExecutionRecord> ExecutionRecords => _executionRecords.AsReadOnly();
 
-    public T? GetInput<T>()
+    public void AddExecutionRecord(string stepName, DateTime startedAt, DateTime finishedAt, object? output = null, string? routeKey = null, Dictionary<string, object>? metadata = null)
     {
-        return To<T>(Input);
+        _executionRecords.Add(new StepExecutionRecord(stepName, startedAt, finishedAt, Input, output, routeKey,
+            metadata));
     }
 
     public T? GetOutput<T>()
@@ -311,13 +309,11 @@ public abstract class RouterStepBase : IRouterStep
     {
         var startedAt = DateTime.UtcNow;
 
-        var input = (string)(context.ExecutionRecords.LastOrDefault()?.Output ?? context.GetInput<string>()!);
-
-        context.RouteKey = await GetRouteKeyAsync(input, context) ??
+        context.LastRouteKey = await GetRouteKeyAsync(context.Input, context) ??
                            throw new InvalidOperationException(
                                $"{GetType().Name} could not determine a valid route key.");
 
-        context.AddExecutionRecord(GetType().Name, startedAt, DateTime.UtcNow, input, routeKey: context.RouteKey);
+        context.AddExecutionRecord(GetType().Name, startedAt, DateTime.UtcNow, routeKey: context.LastRouteKey);
     }
 
     protected abstract Task<string?> GetRouteKeyAsync(string input, StepExecutionPlanContext context);
@@ -325,40 +321,18 @@ public abstract class RouterStepBase : IRouterStep
 
 public interface IActionStep : IStep;
 
-public abstract class ActionStepBase<TInput, TOutput> : IActionStep
+public abstract class ActionStepBase<TOutput> : IActionStep
 {
     public async Task ExecuteAsync(StepExecutionPlanContext context)
     {
         var startedAt = DateTime.UtcNow;
 
-        var input = context.Input;
+        context.Output = await ExecuteCoreAsync(context.Input, context);
 
-        foreach (var record in context.ExecutionRecords.Reverse())
-        {
-            if (record.Output is not null)
-            {
-                input = record.Output;
-                break;
-            }
-
-            if (record.Input is not null && record.RouteKey is not null)
-            {
-                input = record.Input;
-                break;
-            }
-        }
-
-        if (input is not null && input is not TInput)
-        {
-            throw new InvalidOperationException($"Input is not of type {typeof(TInput).Name}.");
-        }
-
-        context.Output = await ExecuteCoreAsync((TInput)input!, context);
-
-        context.AddExecutionRecord(GetType().Name, startedAt, DateTime.UtcNow, input, output: context.Output);
+        context.AddExecutionRecord(GetType().Name, startedAt, DateTime.UtcNow, output: context.Output);
     }
 
-    protected abstract Task<TOutput?> ExecuteCoreAsync(TInput? input, StepExecutionPlanContext context);
+    protected abstract Task<TOutput?> ExecuteCoreAsync(string input, StepExecutionPlanContext context);
 }
 
 public class RootRouterStep : RouterStepBase
@@ -385,9 +359,9 @@ public class RootRouterStep : RouterStepBase
     }
 }
 
-public class FallbackStep : ActionStepBase<string, string>
+public class FallbackStep : ActionStepBase<string>
 {
-    protected override Task<string?> ExecuteCoreAsync(string? input, StepExecutionPlanContext context)
+    protected override Task<string?> ExecuteCoreAsync(string input, StepExecutionPlanContext context)
     {
         return Task.FromResult<string?>("How are you?");
     }
@@ -401,17 +375,17 @@ public class SupportRouterStep : RouterStepBase
     }
 }
 
-public class SupportStep : ActionStepBase<string, string>
+public class SupportStep : ActionStepBase<string>
 {
-    protected override Task<string?> ExecuteCoreAsync(string? input, StepExecutionPlanContext context)
+    protected override Task<string?> ExecuteCoreAsync(string input, StepExecutionPlanContext context)
     {
         return Task.FromResult<string?>("Hi, how can I help you with support?");
     }
 }
 
-public class FirstLevelSupportStep : ActionStepBase<string, string>
+public class FirstLevelSupportStep : ActionStepBase<string>
 {
-    protected override Task<string?> ExecuteCoreAsync(string? input, StepExecutionPlanContext context)
+    protected override Task<string?> ExecuteCoreAsync(string input, StepExecutionPlanContext context)
     {
         return Task.FromResult<string?>("Hi, how can I help you with level-1 support?");
     }
@@ -436,17 +410,17 @@ public class BusinessRouterStep : RouterStepBase
     }
 }
 
-public class InSeasonStep : ActionStepBase<string, string>
+public class InSeasonStep : ActionStepBase<string>
 {
-    protected override Task<string?> ExecuteCoreAsync(string? input, StepExecutionPlanContext context)
+    protected override Task<string?> ExecuteCoreAsync(string input, StepExecutionPlanContext context)
     {
         return Task.FromResult<string?>("Hi, how can I help you with in-season?");
     }
 }
 
-public class PreSeasonStep : ActionStepBase<string, string>
+public class PreSeasonStep : ActionStepBase<string>
 {
-    protected override Task<string?> ExecuteCoreAsync(string? input, StepExecutionPlanContext context)
+    protected override Task<string?> ExecuteCoreAsync(string input, StepExecutionPlanContext context)
     {
         return Task.FromResult<string?>("Hi, how can I help you with pre-season?");
     }

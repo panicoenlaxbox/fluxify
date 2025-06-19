@@ -27,14 +27,14 @@ public class FluxifyShould
             new
             {
                 StepName = "RootRouterStep",
-                Input = (string?)"hi",
+                Input = "hi",
                 Output = (string?)null,
                 RouteKey = (string?)"fallback"
             },
             new
             {
                 StepName = "FallbackStep",
-                Input = (string?)"hi",
+                Input = "hi",
                 Output = (string?)"How are you?",
                 RouteKey = (string?)null
             }
@@ -43,7 +43,7 @@ public class FluxifyShould
             new
             {
                 st.StepName,
-                Input = (string?)st.Input,
+                st.Input,
                 Output = (string?)st.Output,
                 st.RouteKey
             });
@@ -78,21 +78,21 @@ public class FluxifyShould
             new
             {
                 StepName = "RootRouterStep", 
-                Input = (string?)"in-season", 
+                Input = "in-season", 
                 Output = (string?)null,
                 RouteKey = (string?)"business"
             },
             new
             {
                 StepName = "BusinessRouterStep", 
-                Input = (string?)"in-season", 
+                Input = "in-season", 
                 Output = (string?)null,
                 RouteKey = (string?)"in-season"
             },
             new
             {
                 StepName = "InSeasonStep", 
-                Input = (string?)"in-season",
+                Input = "in-season",
                 Output = (string?)"Hi, how can I help you with in-season?", 
                 RouteKey = (string?)null
             }
@@ -101,7 +101,7 @@ public class FluxifyShould
             new
             {
                 st.StepName,
-                Input = (string?)st.Input,
+                st.Input,
                 Output = (string?)st.Output,
                 st.RouteKey
             });
@@ -126,7 +126,7 @@ public class FluxifyShould
             new
             {
                 StepName = "FirstLevelSupportStep", 
-                Input = (string?)"hi",
+                Input = "hi",
                 Output = (string?)"Hi, how can I help you with level-1 support?",
                 RouteKey = (string?)null
             }
@@ -135,7 +135,7 @@ public class FluxifyShould
             new
             {
                 st.StepName,
-                Input = (string?)st.Input,
+                st.Input,
                 Output = (string?)st.Output,
                 st.RouteKey
             });
