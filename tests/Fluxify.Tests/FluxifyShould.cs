@@ -8,16 +8,16 @@ public class FluxifyShould
     [Fact]
     public async Task route_then_execute()
     {
-        var plan = new StepExecutionPlan
+        var plan = new ExecutionPlan
         {
             Root = new RootRouterStep()
         };
-        plan.ChildrenMap[(RouterStepBase)plan.Root] = new Dictionary<string, IStep>
+        plan.Children[(RouterStepBase)plan.Root] = new Dictionary<string, IStep>
         {
             { "fallback", new FallbackStep() }
         };
-        var context = new StepExecutionPlanContext("hi");
-        var runner = new StepExecutionPlanRunner();
+        var context = new ExecutionPlanContext("hi");
+        var runner = new ExecutionPlanRunner();
 
         await runner.ExecuteAsync(context, plan);
 
@@ -53,22 +53,22 @@ public class FluxifyShould
     [Fact]
     public async Task route_and_route_then_execute()
     {
-        var plan = new StepExecutionPlan
+        var plan = new ExecutionPlan
         {
             Root = new RootRouterStep()
         };
         var businessRouter = new BusinessRouterStep();
         var inSeasonStep = new InSeasonStep();
-        plan.ChildrenMap[(RouterStepBase)plan.Root] = new Dictionary<string, IStep>
+        plan.Children[(RouterStepBase)plan.Root] = new Dictionary<string, IStep>
         {
             { "business", businessRouter }
         };
-        plan.ChildrenMap[businessRouter] = new Dictionary<string, IStep>
+        plan.Children[businessRouter] = new Dictionary<string, IStep>
         {
             { "in-season", inSeasonStep }
         };
-        var context = new StepExecutionPlanContext("in-season");
-        var runner = new StepExecutionPlanRunner();
+        var context = new ExecutionPlanContext("in-season");
+        var runner = new ExecutionPlanRunner();
 
         await runner.ExecuteAsync(context, plan);
 
@@ -111,12 +111,12 @@ public class FluxifyShould
     [Fact]
     public async Task execute()
     {
-        var plan = new StepExecutionPlan
+        var plan = new ExecutionPlan
         {
             Root = new FirstLevelSupportStep()
         };
-        var context = new StepExecutionPlanContext("hi");
-        var runner = new StepExecutionPlanRunner();
+        var context = new ExecutionPlanContext("hi");
+        var runner = new ExecutionPlanRunner();
 
         await runner.ExecuteAsync(context, plan);
 
@@ -178,7 +178,7 @@ public class FluxifyShould
         services.AddSteps<IFluxify>();
         await using var serviceProvider = services.BuildServiceProvider();
 
-        var plan = JsonStepExecutionPlanLoader.Load(json, serviceProvider);
+        var plan = JsonExecutionPlanLoader.Load(json, serviceProvider);
 
         plan.AsJson().ShouldBe(json);
     }

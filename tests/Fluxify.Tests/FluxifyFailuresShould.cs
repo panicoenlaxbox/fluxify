@@ -10,9 +10,9 @@ public class FluxifyFailuresShould
     public async Task fail_when_router_has_no_children()
     {
         var router = new RootRouterStep();
-        var plan = new StepExecutionPlan { Root = router };
-        var context = new StepExecutionPlanContext("hi");
-        var runner = new StepExecutionPlanRunner();
+        var plan = new ExecutionPlan { Root = router };
+        var context = new ExecutionPlanContext("hi");
+        var runner = new ExecutionPlanRunner();
 
         var ex = await Should.ThrowAsync<InvalidOperationException>(() => runner.ExecuteAsync(context, plan));
 
@@ -23,16 +23,16 @@ public class FluxifyFailuresShould
     public async Task fail_when_route_key_not_found_in_children()
     {
         var router = new RootRouterStep();
-        var plan = new StepExecutionPlan
+        var plan = new ExecutionPlan
         {
             Root = router,
-            ChildrenMap =
+            Children =
             {
                 [router] = new Dictionary<string, IStep> { { "fallback", new FallbackStep() } }
             }
         };
-        var context = new StepExecutionPlanContext("support");
-        var runner = new StepExecutionPlanRunner();
+        var context = new ExecutionPlanContext("support");
+        var runner = new ExecutionPlanRunner();
 
         var ex = await Should.ThrowAsync<InvalidOperationException>(() => runner.ExecuteAsync(context, plan));
 
@@ -42,7 +42,7 @@ public class FluxifyFailuresShould
     [Fact]
     public void fail_when_context_output_type_is_invalid()
     {
-        var context = new StepExecutionPlanContext("hi")
+        var context = new ExecutionPlanContext("hi")
         {
             Output = 1
         };
@@ -56,9 +56,9 @@ public class FluxifyFailuresShould
     public async Task fail_when_router_cannot_determine_route_key()
     {
         var router = new RouterStepWithoutRouteKey();
-        var plan = new StepExecutionPlan { Root = router };
-        var context = new StepExecutionPlanContext("hi");
-        var runner = new StepExecutionPlanRunner();
+        var plan = new ExecutionPlan { Root = router };
+        var context = new ExecutionPlanContext("hi");
+        var runner = new ExecutionPlanRunner();
 
         var ex = await Should.ThrowAsync<InvalidOperationException>(() => runner.ExecuteAsync(context, plan));
 
@@ -84,7 +84,7 @@ public class FluxifyFailuresShould
         services.AddSteps<IFluxify>();
         await using var serviceProvider = services.BuildServiceProvider();
 
-        var ex = Should.Throw<InvalidOperationException>(() => JsonStepExecutionPlanLoader.Load(json, serviceProvider));
+        var ex = Should.Throw<InvalidOperationException>(() => JsonExecutionPlanLoader.Load(json, serviceProvider));
 
         ex.Message.ShouldBe("Action step FallbackStep cannot have children");
     }
@@ -102,7 +102,7 @@ public class FluxifyFailuresShould
         services.AddSteps<IFluxify>();
         await using var serviceProvider = services.BuildServiceProvider();
 
-        var ex = Should.Throw<InvalidOperationException>(() => JsonStepExecutionPlanLoader.Load(json, serviceProvider));
+        var ex = Should.Throw<InvalidOperationException>(() => JsonExecutionPlanLoader.Load(json, serviceProvider));
 
         ex.Message.ShouldBe("Router step RootRouterStep is missing children");
     }
@@ -125,20 +125,20 @@ public class FluxifyFailuresShould
         services.AddSteps<IFluxify>();
         await using var serviceProvider = services.BuildServiceProvider();
 
-        var ex = Should.Throw<InvalidOperationException>(() => JsonStepExecutionPlanLoader.Load(json, serviceProvider));
+        var ex = Should.Throw<InvalidOperationException>(() => JsonExecutionPlanLoader.Load(json, serviceProvider));
 
         ex.Message.ShouldBe("Child FallbackStep missing RouteKey for parent RootRouterStep");
     }
 
     private class RouterStepWithoutRouteKey : RouterStepBase
     {
-        protected override Task<string?> GetRouteKeyAsync(string input, StepExecutionPlanContext context) =>
+        protected override Task<string?> GetRouteKeyAsync(string input, ExecutionPlanContext context) =>
             Task.FromResult<string?>(null);
     }
 
     private class InvalidInputTypeActionStep : ActionStepBase<string>
     {
-        protected override Task<string?> ExecuteCoreAsync(string input, StepExecutionPlanContext context) =>
+        protected override Task<string?> ExecuteCoreAsync(string input, ExecutionPlanContext context) =>
             Task.FromResult<string?>(null);
     }
 }
