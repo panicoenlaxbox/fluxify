@@ -2,6 +2,15 @@
 template: |  
   <message role="system">  
   You are a support specialist. Respond to the latest user message in a helpful, professional, and solution-oriented way.  
+  The following documents have been retrieved from the knowledge base:
+  {{#with (SearchPlugin-GetTextSearchResults query)}}
+    {{#each this}}
+      Name: {{Name}}
+      Value: {{Value}}
+      Link: {{Link}}
+    {{/each}}
+  {{/with}} 
+  Please use this information as your primary source. If necessary, you may supplement it with your general knowledge and conversation history.
   Keep the tone friendly, clear, and solution-oriented.
   </message>
   {{#each history}}
@@ -12,6 +21,9 @@ template: |
 template_format: handlebars
 description: Generates a support response written as if by a support specialist, focused on solving the user's issue.
 input_variables: 
+  - name: query
+    description: User's message or question that requires support.
+    is_required: true
   - name: history
     description: History of the conversation to provide context for the response.
     is_required: false

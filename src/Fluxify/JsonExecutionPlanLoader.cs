@@ -6,7 +6,7 @@ namespace Fluxify;
 
 public static class JsonExecutionPlanLoader
 {
-    public static ExecutionPlan Load(string json, IServiceProvider services)
+    public static ExecutionPlan Load(string json, IServiceProvider serviceProvider)
     {
         var stepDefinition = JsonSerializer.Deserialize<StepDefinition>(json, new JsonSerializerOptions
         {
@@ -15,7 +15,7 @@ public static class JsonExecutionPlanLoader
         })!;
 
         var plan = new ExecutionPlan();
-        plan.Root = Build(stepDefinition, plan, services);
+        plan.Root = Build(stepDefinition, plan, serviceProvider);
         return plan;
     }
 

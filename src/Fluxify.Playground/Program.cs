@@ -1,9 +1,13 @@
-﻿using Fluxify;
+﻿#pragma warning disable SKEXP0010
+
+using Fluxify;
 using Fluxify.Playground;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.SemanticKernel;
+using Qdrant.Client;
+using System.Net;
 
 var configuration = new ConfigurationBuilder()
     .AddJsonFile("appsettings.json", optional: true)
@@ -21,11 +25,24 @@ services.AddSteps<Program>();
 
 services.AddHttpHandlers();
 
-var deploymentName = configuration["AzureOpenAI:DeploymentName"]!;
-var endpoint = configuration["AzureOpenAI:Endpoint"]!;
-var apiKey = configuration["AzureOpenAI:ApiKey"]!;
+var deploymentName = configuration["AzureOpenAI:ChatCompletion:DeploymentName"]!;
+var endpoint = configuration["AzureOpenAI:ChatCompletion:Endpoint"]!;
+var apiKey = configuration["AzureOpenAI:ChatCompletion:ApiKey"]!;
 services.AddAzureOpenAIChatCompletion(deploymentName, endpoint, apiKey);
+deploymentName = configuration["AzureOpenAI:EmbeddingGenerator:DeploymentName"]!;
+endpoint = configuration["AzureOpenAI:EmbeddingGenerator:Endpoint"]!;
+apiKey = configuration["AzureOpenAI:EmbeddingGenerator:ApiKey"]!;
+services.AddAzureOpenAIEmbeddingGenerator(
+    deploymentName: deploymentName,
+    endpoint: endpoint,
+    apiKey: apiKey);
 services.AddKernel();
+
+services.AddVectorStoreTextSearch<Document>();
+services.AddQdrantVectorStore(sp => sp.GetRequiredService<QdrantClient>());
+services.AddTransient(sp => new QdrantClient("localhost"));
+services.AddQdrantCollection<ulong, Document>("skdocuments");
+
 services.AddTransient<ChatService>();
 
 await using var serviceProvider = services.BuildServiceProvider();

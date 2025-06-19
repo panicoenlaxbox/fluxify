@@ -23,3 +23,7 @@ You can build an execution plan in two ways:
 To see an example of loading from JSON, check the test case named [load_plan_from_json](tests/Fluxify.Tests/FluxifyShould.cs).
 
 For examples of building plans manually and different execution patterns, see the test cases in [FluxifyShould.cs](tests/Fluxify.Tests/FluxifyShould.cs).
+
+## Qdrant
+
+`docker run -d --name qdrant -p 6333:6333 -p 6334:6334 -v "C:\Temp\qdrant:/qdrant/storage" qdrant/qdrant:latest`
