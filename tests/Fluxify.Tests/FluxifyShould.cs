@@ -10,11 +10,11 @@ public class FluxifyShould
     {
         var plan = new ExecutionPlan
         {
-            Root = new RootRouterStep()
+            Root = new FakeRootRouterStep()
         };
         plan.Children[(RouterStepBase)plan.Root] = new Dictionary<string, IStep>
         {
-            { "fallback", new FallbackStep() }
+            { "fallback", new FakeFallbackStep() }
         };
         var context = new ExecutionPlanContext("hi");
         var runner = new ExecutionPlanRunner();
@@ -26,14 +26,14 @@ public class FluxifyShould
         {
             new
             {
-                StepName = "RootRouterStep",
+                StepName = "FakeRootRouterStep",
                 Input = "hi",
                 Output = (string?)null,
                 RouteKey = (string?)"fallback"
             },
             new
             {
-                StepName = "FallbackStep",
+                StepName = "FakeFallbackStep",
                 Input = "hi",
                 Output = (string?)"How are you?",
                 RouteKey = (string?)null
@@ -55,10 +55,10 @@ public class FluxifyShould
     {
         var plan = new ExecutionPlan
         {
-            Root = new RootRouterStep()
+            Root = new FakeRootRouterStep()
         };
-        var businessRouter = new BusinessRouterStep();
-        var inSeasonStep = new InSeasonStep();
+        var businessRouter = new FakeBusinessRouterStep();
+        var inSeasonStep = new FakeInSeasonStep();
         plan.Children[(RouterStepBase)plan.Root] = new Dictionary<string, IStep>
         {
             { "business", businessRouter }
@@ -77,21 +77,21 @@ public class FluxifyShould
         {
             new
             {
-                StepName = "RootRouterStep", 
+                StepName = "FakeRootRouterStep", 
                 Input = "in-season", 
                 Output = (string?)null,
                 RouteKey = (string?)"business"
             },
             new
             {
-                StepName = "BusinessRouterStep", 
+                StepName = "FakeBusinessRouterStep", 
                 Input = "in-season", 
                 Output = (string?)null,
                 RouteKey = (string?)"in-season"
             },
             new
             {
-                StepName = "InSeasonStep", 
+                StepName = "FakeInSeasonStep", 
                 Input = "in-season",
                 Output = (string?)"Hi, how can I help you with in-season?", 
                 RouteKey = (string?)null
@@ -113,7 +113,7 @@ public class FluxifyShould
     {
         var plan = new ExecutionPlan
         {
-            Root = new FirstLevelSupportStep()
+            Root = new FakeFirstLevelSupportStep()
         };
         var context = new ExecutionPlanContext("hi");
         var runner = new ExecutionPlanRunner();
@@ -125,7 +125,7 @@ public class FluxifyShould
         {
             new
             {
-                StepName = "FirstLevelSupportStep", 
+                StepName = "FakeFirstLevelSupportStep", 
                 Input = "hi",
                 Output = (string?)"Hi, how can I help you with level-1 support?",
                 RouteKey = (string?)null
@@ -147,26 +147,26 @@ public class FluxifyShould
     {
         const string json = """
            {
-               "ServiceKey": "RootRouterStep",
+               "ServiceKey": "FakeRootRouterStep",
                "Children": [
                    {
-                       "ServiceKey": "FallbackStep",
+                       "ServiceKey": "FakeFallbackStep",
                        "RouteKey": "fallback"
                    },
                    {
-                       "ServiceKey": "SupportStep",
+                       "ServiceKey": "FakeSupportStep",
                        "RouteKey": "support"
                    },
                    {
-                       "ServiceKey": "BusinessRouterStep",
+                       "ServiceKey": "FakeBusinessRouterStep",
                        "RouteKey": "business",
                        "Children": [
                            {
-                               "ServiceKey": "InSeasonStep",
+                               "ServiceKey": "FakeInSeasonStep",
                                "RouteKey": "in-season"
                            },
                            {
-                               "ServiceKey": "PreSeasonStep",
+                               "ServiceKey": "FakePreSeasonStep",
                                "RouteKey": "pre-season"
                            }
                        ]
@@ -175,7 +175,7 @@ public class FluxifyShould
            }
            """;
         var services = new ServiceCollection();
-        services.AddSteps<IFluxify>();
+        services.AddSteps<FluxifyShould>();
         await using var serviceProvider = services.BuildServiceProvider();
 
         var plan = JsonExecutionPlanLoader.Load(json, serviceProvider);
