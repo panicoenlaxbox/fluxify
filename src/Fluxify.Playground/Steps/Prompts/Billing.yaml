@@ -1,13 +1,19 @@
 ﻿name: Billing
 template: |
-  Provide a professional and courteous response to the user's input about billing: "{{user_input}}".  
-  The message should sound as if it comes directly from the billing team, addressing the concern or inquiry clearly.  
+  <message role="system">
+  You are a billing specialist. Respond to the latest user message in a professional and courteous way.
   Keep the tone clear, polite, and customer-focused.
+  </message>
+  {{#each history}}
+  <message role="{{role}}">
+    {{content}}
+  </message>
+  {{/each}}
 template_format: handlebars
-description: Generates a professional billing response directly addressing the user's input.
+description: Generates a billing response written as if by a billing specialist, directly addressing the user's input.
 input_variables:
-  - name: user_input
-    description: The user's message related to billing or payments.
-    is_required: true
+  - name: history
+    description: History of the conversation to provide context for the response.
+    is_required: false
 output_variable:
-  description: A billing team response addressing the user's billing-related message.
+  description: A billing response addressing the user's message in a professional and personalized way.

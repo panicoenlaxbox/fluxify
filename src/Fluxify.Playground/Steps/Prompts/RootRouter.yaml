@@ -1,14 +1,30 @@
 ﻿name: RootRouter
 template: |
-  Decide whether the input "{{user_input}}" should be routed to "support" or "business".  
-  If the message is clearly related to business topics such as sales, marketing, partnerships, or general business inquiries, respond with "business".  
-  If the message is related to help, problems, questions, technical issues, or if there is any uncertainty or ambiguity, respond with "support".  
-  Respond with only one word: "support" or "business". Write it in lowercase, without accents, quotes, punctuation, or any extra characters — just the word itself.
+  <message role="system">    
+  Decide whether the latest user message should be routed to "support" or "business".
+  If the message is clearly about marketing or billing — for example, questions or requests about invoices, payments, pricing, promotions, or campaigns — respond with "business".
+  If the message is about general questions, technical issues or help with any other topic, respond with "support".
+  If the topic is ambiguous or unclear:
+  {{#if previous_routing}}
+  Default to the previous routing value: "{{previous_routing}}".
+  {{else}}
+  Respond with "support".
+  {{/if}}
+  Respond with only one word: support or business. Write it in lowercase, without accents, quotes, or punctuation.
+  </message>
+  {{#each history}}  
+  <message role="{{role}}">
+    {{content}}
+  </message>
+  {{/each}}
 template_format: handlebars
-description: Routes a message to support or business. Defaults to support in case of any doubt.
+description: Routes a message to support or business. Defaults to support in case of doubt, or to the previous routing value if available and applicable.
 input_variables:
-  - name: user_input
-    description: The message to analyze and route.
-    is_required: true
+  - name: previous_routing
+    description: The last routing decision (optional). Used to prefer continuity in ambiguous cases.
+    is_required: false
+  - name: history
+    description: History of the conversation to provide context for the response.
+    is_required: false
 output_variable:
   description: The routing decision ("support" or "business").

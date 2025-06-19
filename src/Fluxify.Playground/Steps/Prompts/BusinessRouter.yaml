@@ -1,15 +1,30 @@
 ﻿name: Business
 template: |
-  Decide whether the input "{{user_input}}" should be routed to "billing" or "marketing".  
-  If the message is clearly about pricing, invoices, payments, subscriptions, or any financial topic, respond with "billing".  
-  If the message is clearly about advertising, campaigns, branding, or promotional activities, respond with "marketing".  
-  If there is any uncertainty or ambiguity, respond with "billing".
+  <message role="system">
+  Decide whether the latest user message should be routed to "billing" or "marketing".
+  If the message is about advertising, campaigns, branding, content, or promotional activities — even if it includes questions about their status, planning, or performance — respond with "marketing".
+  If the message is about pricing, invoices, payments, subscriptions, or any other financial topic, respond with "billing".
+  If the topic is ambiguous or unclear:
+  {{#if previous_routing}}
+  Default to the previous routing value: "{{previous_routing}}".
+  {{else}}
+  Respond with "billing".
+  {{/if}}
   Respond with only one word: "billing" or "marketing". Write it in lowercase, without accents, quotes, punctuation, or any extra characters — just the word itself.
+  </message>
+  {{#each history}}
+  <message role="{{role}}">
+    {{content}}
+  </message>
+  {{/each}}
 template_format: handlebars
 description: Routes a message to billing or marketing. Defaults to billing if the intent is unclear.
 input_variables:
-  - name: user_input
-    description: The message to analyze and route.
-    is_required: true
+  - name: previous_routing
+    description: The last routing decision (optional). Used to prefer continuity in ambiguous cases.
+    is_required: false
+  - name: history
+    description: History of the conversation to provide context for the response.
+    is_required: false
 output_variable:
   description: The routing decision ("billing" or "marketing").

@@ -12,10 +12,7 @@ public class ExecutionRecord
     public ExecutionRecord(string stepName, DateTime startedAt, DateTime finishedAt, string input, object? output,
         string? routeKey)
     {
-        if (string.IsNullOrWhiteSpace(stepName))
-        {
-            throw new ArgumentNullException(nameof(stepName));
-        }
+        ArgumentException.ThrowIfNullOrWhiteSpace(stepName, nameof(stepName));
         StepName = stepName;
         StartedAt = startedAt;
         FinishedAt = finishedAt;

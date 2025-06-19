@@ -1,21 +1,20 @@
-﻿namespace Fluxify.Playground.Steps;
+﻿using Microsoft.SemanticKernel;
+using Microsoft.SemanticKernel.PromptTemplates.Handlebars;
 
-public class RootRouterStep : RouterStepBase
+namespace Fluxify.Playground.Steps;
+
+public class RootRouterStep(Kernel kernel) : RouterStepBase
 {
-    protected override Task<string?> GetRouteKeyAsync(string input, ExecutionPlanContext context)
+    protected override async Task<string?> GetRouteKeyAsync(string input, ExecutionPlanContext context, CancellationToken cancellationToken = default)
     {
-        string? routeKey = null;
-
-        if (input.Contains("support", StringComparison.OrdinalIgnoreCase))
+        var text = await File.ReadAllTextAsync(Path.Combine("Steps", "Prompts", "RootRouter.yaml"), cancellationToken);
+        var function = kernel.CreateFunctionFromPromptYaml(text, new HandlebarsPromptTemplateFactory());
+        var arguments = new KernelArguments
         {
-            routeKey = "support";
-        }
-        else if (input.Contains("marketing", StringComparison.OrdinalIgnoreCase) ||
-                 input.Contains("billing", StringComparison.OrdinalIgnoreCase))
-        {
-            routeKey = "business";
-        }
-
-        return Task.FromResult(routeKey);
+            ["previous_routing"] = context.GetPreviousRouting(nameof(RootRouterStep)),
+            ["history"] = context.GetHistoryForPromptTemplate()
+        };
+        var functionResult = await kernel.InvokeAsync(function, arguments, cancellationToken);
+        return functionResult.GetValue<string>();        
     }
 }

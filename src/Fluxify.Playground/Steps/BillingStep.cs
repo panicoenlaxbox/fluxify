@@ -1,9 +1,19 @@
-﻿namespace Fluxify.Playground.Steps;
+﻿using Microsoft.SemanticKernel;
+using Microsoft.SemanticKernel.PromptTemplates.Handlebars;
 
-public class BillingStep : ActionStepBase<string>
+namespace Fluxify.Playground.Steps;
+
+public class BillingStep(Kernel kernel) : ActionStepBase<string>
 {
-    protected override Task<string?> ExecuteCoreAsync(string input, ExecutionPlanContext context)
+    protected override async Task<string?> ExecuteCoreAsync(string input, ExecutionPlanContext context, CancellationToken cancellationToken = default)
     {
-        return Task.FromResult<string?>("Hi, how can I assist you with your billing?");
+        var text = await File.ReadAllTextAsync(Path.Combine("Steps", "Prompts", "Billing.yaml"), cancellationToken);
+        var function = kernel.CreateFunctionFromPromptYaml(text, new HandlebarsPromptTemplateFactory());
+        var arguments = new KernelArguments
+        {
+            ["history"] = context.GetHistoryForPromptTemplate()
+        };
+        var functionResult = await kernel.InvokeAsync(function, arguments, cancellationToken);
+        return functionResult.GetValue<string>();
     }
 }

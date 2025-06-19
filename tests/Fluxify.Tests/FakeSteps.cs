@@ -2,7 +2,7 @@
 
 public class FakeRootRouterStep : RouterStepBase
 {
-    protected override Task<string?> GetRouteKeyAsync(string input, ExecutionPlanContext context)
+    protected override Task<string?> GetRouteKeyAsync(string input, ExecutionPlanContext context, CancellationToken cancellationToken = default)
     {
         string? routeKey = null;
 
@@ -26,7 +26,7 @@ public class FakeRootRouterStep : RouterStepBase
 
 public class FakeFallbackStep : ActionStepBase<string>
 {
-    protected override Task<string?> ExecuteCoreAsync(string input, ExecutionPlanContext context)
+    protected override Task<string?> ExecuteCoreAsync(string input, ExecutionPlanContext context, CancellationToken cancellationToken = default)
     {
         return Task.FromResult<string?>("How are you?");
     }
@@ -34,7 +34,7 @@ public class FakeFallbackStep : ActionStepBase<string>
 
 public class FakeSupportRouterStep : RouterStepBase
 {
-    protected override Task<string?> GetRouteKeyAsync(string input, ExecutionPlanContext context)
+    protected override Task<string?> GetRouteKeyAsync(string input, ExecutionPlanContext context, CancellationToken cancellationToken = default)
     {
         return Task.FromResult<string?>("level-1");
     }
@@ -42,7 +42,7 @@ public class FakeSupportRouterStep : RouterStepBase
 
 public class FakeSupportStep : ActionStepBase<string>
 {
-    protected override Task<string?> ExecuteCoreAsync(string input, ExecutionPlanContext context)
+    protected override Task<string?> ExecuteCoreAsync(string input, ExecutionPlanContext context, CancellationToken cancellationToken = default)
     {
         return Task.FromResult<string?>("Hi, how can I help you with support?");
     }
@@ -50,7 +50,7 @@ public class FakeSupportStep : ActionStepBase<string>
 
 public class FakeFirstLevelSupportStep : ActionStepBase<string>
 {
-    protected override Task<string?> ExecuteCoreAsync(string input, ExecutionPlanContext context)
+    protected override Task<string?> ExecuteCoreAsync(string input, ExecutionPlanContext context, CancellationToken cancellationToken = default)
     {
         return Task.FromResult<string?>("Hi, how can I help you with level-1 support?");
     }
@@ -58,7 +58,7 @@ public class FakeFirstLevelSupportStep : ActionStepBase<string>
 
 public class FakeBusinessRouterStep : RouterStepBase
 {
-    protected override Task<string?> GetRouteKeyAsync(string input, ExecutionPlanContext context)
+    protected override Task<string?> GetRouteKeyAsync(string input, ExecutionPlanContext context, CancellationToken cancellationToken = default)
     {
         string? routeKey = null;
 
@@ -77,7 +77,7 @@ public class FakeBusinessRouterStep : RouterStepBase
 
 public class FakeInSeasonStep : ActionStepBase<string>
 {
-    protected override Task<string?> ExecuteCoreAsync(string input, ExecutionPlanContext context)
+    protected override Task<string?> ExecuteCoreAsync(string input, ExecutionPlanContext context, CancellationToken cancellationToken = default)
     {
         return Task.FromResult<string?>("Hi, how can I help you with in-season?");
     }
@@ -85,7 +85,7 @@ public class FakeInSeasonStep : ActionStepBase<string>
 
 public class FakePreSeasonStep : ActionStepBase<string>
 {
-    protected override Task<string?> ExecuteCoreAsync(string input, ExecutionPlanContext context)
+    protected override Task<string?> ExecuteCoreAsync(string input, ExecutionPlanContext context, CancellationToken cancellationToken = default)
     {
         return Task.FromResult<string?>("Hi, how can I help you with pre-season?");
     }
@@ -93,12 +93,12 @@ public class FakePreSeasonStep : ActionStepBase<string>
 
 public class FakeRouterStepWithoutRouteKey : RouterStepBase
 {
-    protected override Task<string?> GetRouteKeyAsync(string input, ExecutionPlanContext context) =>
+    protected override Task<string?> GetRouteKeyAsync(string input, ExecutionPlanContext context, CancellationToken cancellationToken = default) =>
         Task.FromResult<string?>(null);
 }
 
 public class InvalidInputTypeActionStep : ActionStepBase<string>
 {
-    protected override Task<string?> ExecuteCoreAsync(string input, ExecutionPlanContext context) =>
+    protected override Task<string?> ExecuteCoreAsync(string input, ExecutionPlanContext context, CancellationToken cancellationToken = default) =>
         Task.FromResult<string?>(null);
 }

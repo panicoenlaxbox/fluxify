@@ -19,7 +19,7 @@ public class FluxifyShould
         var context = new ExecutionPlanContext("hi");
         var runner = new ExecutionPlanRunner();
 
-        await runner.ExecuteAsync(context, plan);
+        await runner.ExecuteAsync(context, plan, TestContext.Current.CancellationToken);
 
         context.Output.ShouldBe("How are you?");
         var expected = new[]
@@ -70,7 +70,7 @@ public class FluxifyShould
         var context = new ExecutionPlanContext("in-season");
         var runner = new ExecutionPlanRunner();
 
-        await runner.ExecuteAsync(context, plan);
+        await runner.ExecuteAsync(context, plan, TestContext.Current.CancellationToken);
 
         context.Output.ShouldBe("Hi, how can I help you with in-season?");
         var expected = new[]
@@ -118,7 +118,7 @@ public class FluxifyShould
         var context = new ExecutionPlanContext("hi");
         var runner = new ExecutionPlanRunner();
 
-        await runner.ExecuteAsync(context, plan);
+        await runner.ExecuteAsync(context, plan, TestContext.Current.CancellationToken);
 
         context.Output.ShouldBe("Hi, how can I help you with level-1 support?");
         var expected = new[]

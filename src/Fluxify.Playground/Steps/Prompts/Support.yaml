@@ -1,13 +1,19 @@
 ﻿name: Support
-template: |
-  Provide a helpful and professional support message in response to the user's input: "{{user_input}}".  
-  The message should sound as if it comes directly from the support team, actively addressing the user's issue or question.  
+template: |  
+  <message role="system">  
+  You are a support specialist. Respond to the latest user message in a helpful, professional, and solution-oriented way.  
   Keep the tone friendly, clear, and solution-oriented.
+  </message>
+  {{#each history}}
+  <message role="{{role}}">
+    {{content}}
+  </message>
+  {{/each}}
 template_format: handlebars
-description: Generates a support response directly addressing the user's input.
-input_variables:
-  - name: user_input
-    description: The user's message requiring support.
-    is_required: true
+description: Generates a support response written as if by a support specialist, focused on solving the user's issue.
+input_variables: 
+  - name: history
+    description: History of the conversation to provide context for the response.
+    is_required: false
 output_variable:
-  description: A support team response addressing the user's message.
+  description: A support response addressing the user's message personally and helpfully.

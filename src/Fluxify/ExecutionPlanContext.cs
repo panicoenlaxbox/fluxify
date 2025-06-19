@@ -4,10 +4,20 @@ namespace Fluxify;
 
 public class ExecutionPlanContext
 {
+    private string _input = null!;
+
     /// <summary>
     /// Original input to the plan.
     /// </summary>
-    public string Input { get; }
+    public string Input
+    {
+        get => _input;
+        set
+        {
+            ArgumentException.ThrowIfNullOrWhiteSpace(value, nameof(Input));
+            _input = value;
+        }
+    }
 
     /// <summary>
     /// Output set by the executed action step of type <see cref="ActionStepBase{R}"/>.
@@ -29,10 +39,6 @@ public class ExecutionPlanContext
 
     public ExecutionPlanContext(string input, ChatHistory? history = null)
     {
-        if (string.IsNullOrWhiteSpace(input))
-        {
-            throw new ArgumentNullException(nameof(input));
-        }
         Input = input;
         StartedAt = DateTime.UtcNow;
         History = history ?? [];
@@ -44,6 +50,14 @@ public class ExecutionPlanContext
     {
         _executionRecords.Add(new ExecutionRecord(stepName, startedAt, finishedAt, Input, output, routeKey));
     }
+
+
+    public string? GetPreviousRouting(string stepName) => _executionRecords
+            .Where(r => r.StepName == stepName)
+            .OrderByDescending(r => r.FinishedAt)
+            .FirstOrDefault()?.RouteKey;
+
+    public IEnumerable<object> GetHistoryForPromptTemplate() => History.Select(h => new { h.Role, h.Content }).ToList();
 
     public T? GetOutput<T>()
     {

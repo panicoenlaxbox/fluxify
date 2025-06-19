@@ -4,9 +4,11 @@ namespace Fluxify;
 
 public class ExecutionPlanRunner : LoggerBase
 {
-    public async Task ExecuteAsync(ExecutionPlanContext context, ExecutionPlan plan)
+    public async Task ExecuteAsync(ExecutionPlanContext context, ExecutionPlan plan, CancellationToken cancellationToken = default)
     {
         var currentStep = plan.Root;
+
+        context.History.AddUserMessage(context.Input);
 
         while (currentStep is not null)
         {
@@ -14,7 +16,7 @@ public class ExecutionPlanRunner : LoggerBase
             {
                 Logger.LogDebug("Executing router step {StepName}", currentStep.GetType().Name);
 
-                await currentStep.ExecuteAsync(context);
+                await currentStep.ExecuteAsync(context, cancellationToken);
 
                 var routeKey = context.LastRouteKey!;
 
@@ -39,7 +41,9 @@ public class ExecutionPlanRunner : LoggerBase
             {
                 Logger.LogDebug("Executing action step {StepName}", currentStep.GetType().Name);
 
-                await currentStep.ExecuteAsync(context);
+                await currentStep.ExecuteAsync(context, cancellationToken);
+
+                context.History.AddAssistantMessage(context.Output?.ToString() ?? string.Empty);
 
                 currentStep = null;
             }

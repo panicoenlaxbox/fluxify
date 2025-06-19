@@ -1,13 +1,19 @@
 ﻿name: MarketingResponse
 template: |
-  Provide a professional and friendly response to the user's input about marketing: "{{user_input}}".  
-  The message should sound as if it comes directly from the marketing team, addressing the topic or request naturally.  
-  Keep the tone warm, brand-aligned, and non-technical.
+  <message role="system">    
+  You are a marketing specialist. Respond to the latest user message in a professional, friendly, and brand-aligned way.
+  Keep the tone warm, clear, and non-technical.
+  </message>
+  {{#each history}}
+  <message role="{{role}}">
+    {{content}}
+  </message>
+  {{/each}}
 template_format: handlebars
-description: Generates a marketing response directly addressing the user's input.
+description: Generates a marketing response written as if by a marketing specialist, directly addressing the user's input.
 input_variables:
-  - name: user_input
-    description: The user's message related to marketing.
-    is_required: true
+  - name: history
+    description: History of the conversation to provide context for the response.
+    is_required: false
 output_variable:
-  description: A marketing team response addressing the user's message.
+  description: A marketing response addressing the user's message in a personal and brand-aligned way.
