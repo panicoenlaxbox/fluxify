@@ -107,7 +107,7 @@ public class StepExecutionPlanRunner : LoggerBase
 
                 await currentStep.ExecuteAsync(context);
 
-                string routeKey = context.RouteKey!;
+                var routeKey = context.RouteKey!;
 
                 Logger.LogDebug("Router step {StepName} determined route key {RouteKey}", currentStep.GetType().Name,
                     routeKey);
@@ -190,8 +190,7 @@ public static class JsonStepExecutionPlanLoader
                         $"Child {child.ServiceKey} missing RouteKey for parent {definition.ServiceKey}");
                 }
 
-                var builtChild = Build(child, plan, serviceProvider);
-                children[child.RouteKey] = builtChild;
+                children[child.RouteKey] = Build(child, plan, serviceProvider);
             }
 
             plan.ChildrenMap[routerStep] = children;

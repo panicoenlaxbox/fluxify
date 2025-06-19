@@ -1,6 +1,5 @@
 ﻿using Shouldly;
 using Microsoft.Extensions.DependencyInjection;
-using System.Text.Json;
 
 namespace Fluxify.Tests;
 
