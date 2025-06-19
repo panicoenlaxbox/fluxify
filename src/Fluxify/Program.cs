@@ -1,7 +1,6 @@
 ﻿using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
-using System.Reflection.Metadata.Ecma335;
 using System.Text.Json;
 using System.Text.Json.Serialization;
 
@@ -220,10 +219,9 @@ public class ExecutionRecord
     public string Input { get; }
     public object? Output { get; }
     public string? RouteKey { get; }
-    public Dictionary<string, object>? Metadata { get; }
 
     public ExecutionRecord(string stepName, DateTime startedAt, DateTime finishedAt, string input, object? output,
-        string? routeKey, Dictionary<string, object>? metadata)
+        string? routeKey)
     {
         if (string.IsNullOrWhiteSpace(stepName))
         {
@@ -235,7 +233,6 @@ public class ExecutionRecord
         Input = input;
         Output = output;
         RouteKey = routeKey;
-        Metadata = metadata;
     }
 }
 
@@ -256,8 +253,6 @@ public class ExecutionPlanContext
     /// </summary>
     public string? LastRouteKey { get; set; }
 
-    public Dictionary<string, object>? Metadata { get; set; }
-
     public DateTime StartedAt { get; }
 
     public DateTime? FinishedAt => _executionRecords.LastOrDefault()?.FinishedAt;
@@ -276,10 +271,9 @@ public class ExecutionPlanContext
 
     public IReadOnlyList<ExecutionRecord> ExecutionRecords => _executionRecords.AsReadOnly();
 
-    public void AddExecutionRecord(string stepName, DateTime startedAt, DateTime finishedAt, object? output = null, string? routeKey = null, Dictionary<string, object>? metadata = null)
+    public void AddExecutionRecord(string stepName, DateTime startedAt, DateTime finishedAt, object? output = null, string? routeKey = null)
     {
-        _executionRecords.Add(new ExecutionRecord(stepName, startedAt, finishedAt, Input, output, routeKey,
-            metadata));
+        _executionRecords.Add(new ExecutionRecord(stepName, startedAt, finishedAt, Input, output, routeKey));
     }
 
     public T? GetOutput<T>()
