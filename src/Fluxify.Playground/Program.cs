@@ -7,7 +7,6 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.SemanticKernel;
 using Qdrant.Client;
-using System.Net;
 
 var configuration = new ConfigurationBuilder()
     .AddJsonFile("appsettings.json", optional: true)
