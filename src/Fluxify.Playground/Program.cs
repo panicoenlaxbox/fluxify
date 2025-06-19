@@ -9,10 +9,6 @@ const string json = """
                         "ServiceKey": "RootRouterStep",
                         "Children": [
                             {
-                                "ServiceKey": "FallbackStep",
-                                "RouteKey": "fallback"
-                            },
-                            {
                                 "ServiceKey": "SupportStep",
                                 "RouteKey": "support"
                             },        
@@ -21,12 +17,12 @@ const string json = """
                                 "RouteKey": "business",
                                 "Children": [
                                     {
-                                        "ServiceKey": "InSeasonStep",
-                                        "RouteKey": "in-season"
+                                        "ServiceKey": "MarketingStep",
+                                        "RouteKey": "marketing"
                                     },
                                     {
-                                        "ServiceKey": "PreSeasonStep",
-                                        "RouteKey": "pre-season"
+                                        "ServiceKey": "BillingStep",
+                                        "RouteKey": "billing"
                                     }
                                 ]
                             }

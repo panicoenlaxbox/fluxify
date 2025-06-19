@@ -1,4 +1,4 @@
-﻿namespace Fluxify.Playground;
+﻿namespace Fluxify.Playground.Steps;
 
 public class SupportStep : ActionStepBase<string>
 {

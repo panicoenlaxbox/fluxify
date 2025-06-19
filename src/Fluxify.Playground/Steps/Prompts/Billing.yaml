@@ -1,0 +1,13 @@
+﻿name: Billing
+template: |
+  Provide a professional and courteous response to the user's input about billing: "{{user_input}}".  
+  The message should sound as if it comes directly from the billing team, addressing the concern or inquiry clearly.  
+  Keep the tone clear, polite, and customer-focused.
+template_format: handlebars
+description: Generates a professional billing response directly addressing the user's input.
+input_variables:
+  - name: user_input
+    description: The user's message related to billing or payments.
+    is_required: true
+output_variable:
+  description: A billing team response addressing the user's billing-related message.

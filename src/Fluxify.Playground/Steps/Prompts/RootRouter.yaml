@@ -1,0 +1,14 @@
+﻿name: RootRouter
+template: |
+  Decide whether the input "{{user_input}}" should be routed to "support" or "business".  
+  If the message is clearly related to business topics such as sales, marketing, partnerships, or general business inquiries, respond with "business".  
+  If the message is related to help, problems, questions, technical issues, or if there is any uncertainty or ambiguity, respond with "support".  
+  Respond with only one word: "support" or "business". Write it in lowercase, without accents, quotes, punctuation, or any extra characters — just the word itself.
+template_format: handlebars
+description: Routes a message to support or business. Defaults to support in case of any doubt.
+input_variables:
+  - name: user_input
+    description: The message to analyze and route.
+    is_required: true
+output_variable:
+  description: The routing decision ("support" or "business").

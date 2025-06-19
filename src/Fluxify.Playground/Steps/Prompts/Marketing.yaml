@@ -1,0 +1,13 @@
+﻿name: MarketingResponse
+template: |
+  Provide a professional and friendly response to the user's input about marketing: "{{user_input}}".  
+  The message should sound as if it comes directly from the marketing team, addressing the topic or request naturally.  
+  Keep the tone warm, brand-aligned, and non-technical.
+template_format: handlebars
+description: Generates a marketing response directly addressing the user's input.
+input_variables:
+  - name: user_input
+    description: The user's message related to marketing.
+    is_required: true
+output_variable:
+  description: A marketing team response addressing the user's message.

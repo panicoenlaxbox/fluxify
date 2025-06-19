@@ -1,0 +1,13 @@
+﻿name: Support
+template: |
+  Provide a helpful and professional support message in response to the user's input: "{{user_input}}".  
+  The message should sound as if it comes directly from the support team, actively addressing the user's issue or question.  
+  Keep the tone friendly, clear, and solution-oriented.
+template_format: handlebars
+description: Generates a support response directly addressing the user's input.
+input_variables:
+  - name: user_input
+    description: The user's message requiring support.
+    is_required: true
+output_variable:
+  description: A support team response addressing the user's message.

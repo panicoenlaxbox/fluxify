@@ -1,0 +1,15 @@
+﻿name: Business
+template: |
+  Decide whether the input "{{user_input}}" should be routed to "billing" or "marketing".  
+  If the message is clearly about pricing, invoices, payments, subscriptions, or any financial topic, respond with "billing".  
+  If the message is clearly about advertising, campaigns, branding, or promotional activities, respond with "marketing".  
+  If there is any uncertainty or ambiguity, respond with "billing".
+  Respond with only one word: "billing" or "marketing". Write it in lowercase, without accents, quotes, punctuation, or any extra characters — just the word itself.
+template_format: handlebars
+description: Routes a message to billing or marketing. Defaults to billing if the intent is unclear.
+input_variables:
+  - name: user_input
+    description: The message to analyze and route.
+    is_required: true
+output_variable:
+  description: The routing decision ("billing" or "marketing").

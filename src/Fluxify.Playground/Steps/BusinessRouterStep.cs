@@ -1,4 +1,4 @@
-﻿namespace Fluxify.Playground;
+﻿namespace Fluxify.Playground.Steps;
 
 public class BusinessRouterStep : RouterStepBase
 {
@@ -6,13 +6,13 @@ public class BusinessRouterStep : RouterStepBase
     {
         string? routeKey = null;
 
-        if (input.Contains("in-season", StringComparison.OrdinalIgnoreCase))
+        if (input.Contains("marketing", StringComparison.OrdinalIgnoreCase))
         {
-            routeKey = "in-season";
+            routeKey = "marketing";
         }
-        else if (input.Contains("pre-season", StringComparison.OrdinalIgnoreCase))
+        else if (input.Contains("billing", StringComparison.OrdinalIgnoreCase))
         {
-            routeKey = "pre-season";
+            routeKey = "billing";
         }
 
         return Task.FromResult(routeKey);
