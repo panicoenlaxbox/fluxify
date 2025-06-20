@@ -19,7 +19,7 @@ public class MarketingCampaign
     public required string Status { get; init; } // Active, Paused, Completed
 }
 
-public class MarketingCampaignsPlugin
+public class MarketingPlugin
 {
     private static readonly Random _random = new();
 
@@ -73,19 +73,19 @@ public class MarketingStep : ActionStepBase<string>
     public MarketingStep(Kernel kernel)
     {
         _kernel = kernel;
-        _kernel.Plugins.AddFromType<MarketingCampaignsPlugin>();
+        _kernel.Plugins.AddFromType<MarketingPlugin>();
     }
 
     protected override async Task<string?> ExecuteCoreAsync(string input, ExecutionPlanContext context, CancellationToken cancellationToken = default)
-    {
-        var text = await File.ReadAllTextAsync(Path.Combine("Steps", "Prompts", "Marketing.yaml"), cancellationToken);
+    {        
+        var text = await EmbeddedResourceLoader.LoadAsync("Marketing.yaml", cancellationToken: cancellationToken);
         var function = _kernel.CreateFunctionFromPromptYaml(text, new HandlebarsPromptTemplateFactory());
         var arguments = new KernelArguments(new PromptExecutionSettings()
         {
             FunctionChoiceBehavior = FunctionChoiceBehavior.Auto()
         })
         {
-            ["history"] = context.GetHistoryForPromptTemplate()
+            ["history"] = context.GetHistoryForPrompt()
         };
         var functionResult = await _kernel.InvokeAsync(function, arguments, cancellationToken);
         return functionResult.GetValue<string>();        

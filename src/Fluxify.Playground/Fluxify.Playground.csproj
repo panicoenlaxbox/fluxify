@@ -10,32 +10,27 @@
 
 	<ItemGroup>
 	  <None Remove="appsettings.json" />
-	  <None Remove="Steps\Prompts\Billing.yaml" />
-	  <None Remove="Steps\Prompts\BusinessRouter.yaml" />
-	  <None Remove="Steps\Prompts\Marketing.yaml" />
-	  <None Remove="Steps\Prompts\RootRouter.yaml" />
-	  <None Remove="Steps\Prompts\Support.yaml" />
 	</ItemGroup>
 
 	<ItemGroup>
 	  <Content Include="appsettings.json">
 	    <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
 	  </Content>
-	  <Content Include="Steps\Prompts\Billing.yaml">
-	    <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-	  </Content>
-	  <Content Include="Steps\Prompts\BusinessRouter.yaml">
-	    <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-	  </Content>
-	  <Content Include="Steps\Prompts\Marketing.yaml">
-	    <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-	  </Content>
-	  <Content Include="Steps\Prompts\RootRouter.yaml">
-	    <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-	  </Content>
-	  <Content Include="Steps\Prompts\Support.yaml">
-	    <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-	  </Content>
+	  <EmbeddedResource Include="Steps\Prompts\Billing.yaml">
+	    <CopyToOutputDirectory>Never</CopyToOutputDirectory>
+	  </EmbeddedResource>
+	  <EmbeddedResource Include="Steps\Prompts\BusinessRouter.yaml">
+	    <CopyToOutputDirectory>Never</CopyToOutputDirectory>
+	  </EmbeddedResource>
+	  <EmbeddedResource Include="Steps\Prompts\Marketing.yaml">
+	    <CopyToOutputDirectory>Never</CopyToOutputDirectory>
+	  </EmbeddedResource>
+	  <EmbeddedResource Include="Steps\Prompts\RootRouter.yaml">
+	    <CopyToOutputDirectory>Never</CopyToOutputDirectory>
+	  </EmbeddedResource>
+	  <EmbeddedResource Include="Steps\Prompts\Support.yaml">
+	    <CopyToOutputDirectory>Never</CopyToOutputDirectory>
+	  </EmbeddedResource>
 	</ItemGroup>
 
 	<ItemGroup>

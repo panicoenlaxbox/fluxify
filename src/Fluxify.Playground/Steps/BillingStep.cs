@@ -14,7 +14,7 @@ public class Invoice
     public required string Description { get; init; }
 }
 
-public class InvoicesPlugin
+public class BillingPlugin
 {
     private static readonly Random _random = new();
 
@@ -50,19 +50,19 @@ public class BillingStep : ActionStepBase<string>
     public BillingStep(Kernel kernel)
     {
         _kernel = kernel;
-        _kernel.Plugins.AddFromType<InvoicesPlugin>();
+        _kernel.Plugins.AddFromType<BillingPlugin>();
     }
 
     protected override async Task<string?> ExecuteCoreAsync(string input, ExecutionPlanContext context, CancellationToken cancellationToken = default)
-    {
-        var text = await File.ReadAllTextAsync(Path.Combine("Steps", "Prompts", "Billing.yaml"), cancellationToken);
+    {        
+        var text = await File.ReadAllTextAsync(Path.Combine("Steps", "Billing.yaml"), cancellationToken);
         var function = _kernel.CreateFunctionFromPromptYaml(text, new HandlebarsPromptTemplateFactory());
         var arguments = new KernelArguments(new PromptExecutionSettings()
         {
             FunctionChoiceBehavior = FunctionChoiceBehavior.Auto()            
         })
         {
-            ["history"] = context.GetHistoryForPromptTemplate()
+            ["history"] = context.GetHistoryForPrompt()
         };
         var functionResult = await _kernel.InvokeAsync(function, arguments, cancellationToken);
         return functionResult.GetValue<string>();

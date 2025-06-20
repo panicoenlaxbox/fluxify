@@ -26,13 +26,13 @@ public class SupportStep : ActionStepBase<string>
     }
 
     protected override async Task<string?> ExecuteCoreAsync(string input, ExecutionPlanContext context, CancellationToken cancellationToken = default)
-    {
-        var text = await File.ReadAllTextAsync(Path.Combine("Steps", "Prompts", "Support.yaml"), cancellationToken);
+    {        
+        var text = await EmbeddedResourceLoader.LoadAsync("Support.yaml", cancellationToken: cancellationToken);
         var function = _kernel.CreateFunctionFromPromptYaml(text, new HandlebarsPromptTemplateFactory());
         var arguments = new KernelArguments
         {
             ["query"] = context.Input,
-            ["history"] = context.GetHistoryForPromptTemplate()
+            ["history"] = context.GetHistoryForPrompt()
         };
         var functionResult = await _kernel.InvokeAsync(function, arguments, cancellationToken);
         return functionResult.GetValue<string>();

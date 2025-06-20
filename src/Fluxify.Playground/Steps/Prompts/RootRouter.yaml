@@ -2,7 +2,7 @@
 template: |
   <message role="system">    
   Decide whether the latest user message should be routed to "support" or "business".
-  If the message is clearly about marketing or billing — for example, questions or requests about invoices, payments, pricing, promotions, or campaigns — respond with "business".
+  If the message is about marketing or billing — for example, questions or requests about invoices, payments, pricing, promotions, or campaigns — respond with "business".
   If the message is about general questions, technical issues or help with any other topic, respond with "support".
   If the topic is ambiguous or unclear:
   {{#if previous_routing}}
@@ -18,7 +18,7 @@ template: |
   </message>
   {{/each}}
 template_format: handlebars
-description: Routes a message to support or business. Defaults to support in case of doubt, or to the previous routing value if available and applicable.
+description: Routes a message to support or business.
 input_variables:
   - name: previous_routing
     description: The last routing decision (optional). Used to prefer continuity in ambiguous cases.

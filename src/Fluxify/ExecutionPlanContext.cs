@@ -52,12 +52,12 @@ public class ExecutionPlanContext
     }
 
 
-    public string? GetPreviousRouting(string stepName) => _executionRecords
-            .Where(r => r.StepName == stepName)
+    public string? GetLatestRouteByRouter(string router) => _executionRecords
+            .Where(r => r.StepName == router)
             .OrderByDescending(r => r.FinishedAt)
             .FirstOrDefault()?.RouteKey;
 
-    public IEnumerable<object> GetHistoryForPromptTemplate() => History.Select(h => new { h.Role, h.Content }).ToList();
+    public IEnumerable<object> GetHistoryForPrompt() => History.Select(h => new { h.Role, h.Content }).ToList();
 
     public T? GetOutput<T>()
     {

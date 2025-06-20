@@ -18,7 +18,7 @@ template: |
   </message>
   {{/each}}
 template_format: handlebars
-description: Routes a message to billing or marketing. Defaults to billing if the intent is unclear.
+description: Routes a message to billing or marketing.
 input_variables:
   - name: previous_routing
     description: The last routing decision (optional). Used to prefer continuity in ambiguous cases.

@@ -1,4 +1,4 @@
-﻿name: MarketingResponse
+﻿name: Marketing
 template: |
   <message role="system">    
   You are a marketing specialist. Respond to the latest user message in a professional, friendly, and brand-aligned way.
