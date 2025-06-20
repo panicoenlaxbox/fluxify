@@ -1,5 +1,6 @@
 ﻿#pragma warning disable SKEXP0010
 
+using AgenticPatterns;
 using Fluxify;
 using Fluxify.Playground;
 using Microsoft.Extensions.Configuration;
@@ -36,6 +37,7 @@ services.AddAzureOpenAIEmbeddingGenerator(
     endpoint: endpoint,
     apiKey: apiKey);
 services.AddKernel();
+services.AddSingleton<IPromptRenderFilter, HtmlCommentStripperFilter>();
 
 services.AddVectorStoreTextSearch<Document>();
 services.AddQdrantVectorStore(sp => sp.GetRequiredService<QdrantClient>());
@@ -75,4 +77,4 @@ const string json = """
 
 var chatService = serviceProvider.GetRequiredService<ChatService>();
 
-await chatService.RunAsync(json);
+await chatService.ExecuteAsync(json);

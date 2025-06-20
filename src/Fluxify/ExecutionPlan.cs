@@ -38,4 +38,27 @@ public class ExecutionPlan
             RouteKey = routeKey
         };
     }
+
+    public IStep GetStep(Type type)
+    {
+        if (Root.GetType() == type)
+        {
+            return Root;
+        }
+
+        foreach (var child in Children.Values.SelectMany(c => c.Values))
+        {
+            if (child.GetType() == type)
+            {
+                return child;
+            }
+        }
+
+        throw new InvalidOperationException($"Step of type {type.Name} not found in the execution plan.");
+    }
+
+    public T GetStep<T>() where T : IStep
+    {
+        return (T)GetStep(typeof(T));
+    }
 }

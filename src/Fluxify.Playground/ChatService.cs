@@ -16,15 +16,15 @@ internal class ChatService(IServiceProvider serviceProvider)
         return input;
     }
 
-    public async Task RunAsync(string json, CancellationToken cancellationToken = default)
+    public async Task ExecuteAsync(string json, CancellationToken cancellationToken = default)
     {
         var chatHistoryReducer = new ChatHistorySummarizationReducer(serviceProvider.GetRequiredService<IChatCompletionService>(), targetCount: 2, thresholdCount: 4);
 
         var input = GetUserInput();
 
+        var plan = JsonExecutionPlanLoader.Load(json, serviceProvider);
         var context = new ExecutionPlanContext(input);
         var runner = new ExecutionPlanRunner();
-        var plan = JsonExecutionPlanLoader.Load(json, serviceProvider);
 
         await runner.ExecuteAsync(context, plan, cancellationToken);
 

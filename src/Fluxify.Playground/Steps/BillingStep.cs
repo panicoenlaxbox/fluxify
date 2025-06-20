@@ -1,6 +1,8 @@
-﻿using Microsoft.SemanticKernel;
+﻿using Microsoft.Extensions.DependencyInjection;
+using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.PromptTemplates.Handlebars;
 using System.ComponentModel;
+using System.Net.Mime;
 
 namespace Fluxify.Playground.Steps;
 
@@ -10,11 +12,11 @@ public class Invoice
     public decimal Amount { get; init; }
     public DateTime IssueDate { get; init; }
     public DateTime DueDate { get; init; }
-    public bool IsPaid { get; init; }    
+    public bool IsPaid { get; init; }
     public required string Description { get; init; }
 }
 
-public class BillingPlugin
+public class BillingPlugin([FromKeyedServices("SupportStep")] IStep supportStep)
 {
     private static readonly Random _random = new();
 
@@ -41,25 +43,42 @@ public class BillingPlugin
 
         return invoices;
     }
+
+    [KernelFunction("get_support")]
+    [Description("Provides support information relevant to the user's issue based on their input within the conversation context.")]
+    public async Task<string?> GetSupport(
+        [Description("A brief summary of the user's question or issue in the context of the current conversation.")]
+    string query,
+        CancellationToken cancellationToken = default)
+    {
+        var context = new ExecutionPlanContext(query);
+        await supportStep.ExecuteAsync(context, cancellationToken);
+        return context.GetOutput<string?>();
+    }
 }
 
 public class BillingStep : ActionStepBase<string>
 {
     private readonly Kernel _kernel;
+    private readonly IServiceProvider _serviceProvider;
 
-    public BillingStep(Kernel kernel)
+    public BillingStep(Kernel kernel, IServiceProvider serviceProvider)
     {
         _kernel = kernel;
-        _kernel.Plugins.AddFromType<BillingPlugin>();
+        _serviceProvider = serviceProvider;
     }
 
     protected override async Task<string?> ExecuteCoreAsync(string input, ExecutionPlanContext context, CancellationToken cancellationToken = default)
-    {        
-        var text = await File.ReadAllTextAsync(Path.Combine("Steps", "Billing.yaml"), cancellationToken);
+    {
+        if (!_kernel.Plugins.Contains(nameof(BillingPlugin)))
+        {            
+            _kernel.Plugins.AddFromType<BillingPlugin>(nameof(BillingPlugin), _serviceProvider);
+        }
+        var text = await EmbeddedResourceLoader.LoadAsync("Billing.yaml", cancellationToken: cancellationToken);
         var function = _kernel.CreateFunctionFromPromptYaml(text, new HandlebarsPromptTemplateFactory());
         var arguments = new KernelArguments(new PromptExecutionSettings()
         {
-            FunctionChoiceBehavior = FunctionChoiceBehavior.Auto()            
+            FunctionChoiceBehavior = FunctionChoiceBehavior.Auto()
         })
         {
             ["history"] = context.GetHistoryForPrompt()
